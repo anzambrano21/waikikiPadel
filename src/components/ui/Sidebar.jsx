@@ -12,9 +12,11 @@ const Sidebar = () => {
     return (
         <div className="h-full flex flex-col bg-[#113872]">
             {/* Logo */}
-            <Link to="/">
-                <img className="w-16 align-conter" src={logo} alt="logo" />
-            </Link>
+            <div className='flex justify-center'>
+                <Link to="/">
+                    <img className="w-30" src={logo} alt="logo" />
+                </Link>
+            </div>
 
             {/* Navegación */}
             <nav className="flex flex-col flex-grow">
