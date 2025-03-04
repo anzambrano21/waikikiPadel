@@ -14,14 +14,14 @@ const HeaderClient = () => {
         <>
             <header className="bg-white flex justify-between items-center p-4 shadow-lg z-50">
 
-                <Link to="/principal" className="flex items-center">
+                <Link to="/" className="flex items-center">
                     <img src={logo} alt="logo" className="w-20" />
                 </Link>
 
                 {/* Menú Hamburguesa */}
                 <button
                     onClick={toggleSidebar}
-                    className="px-4 text-black focus:outline-none"
+                    className="px-4 text-black cursor-pointer focus:outline-none"
                     aria-label="Abrir menú"
                 >
                     <svg
@@ -41,14 +41,16 @@ const HeaderClient = () => {
                 </button>
             </header>
 
-            {/* Sidebar (se abre desde la derecha) */}
             <div
-                className={`fixed inset-y-0 right-0 w-64 bg-white transform ${
+                className={`fixed inset-y-0 right-0 w-64 bg-[#113872] transform ${
                     isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
-                } transition-transform duration-300 ease-in-out z-40`}
+                } transition-transform duration-1000 ease-in-out z-40 ${
+                    isSidebarOpen ? 'visible' : 'invisible'
+                }`}
             >
                 <SidebarClient />
             </div>
+
 
             {/* Overlay para cerrar el Sidebar */}
             {isSidebarOpen && (

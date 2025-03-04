@@ -4,9 +4,9 @@ import logo from '../../assets/logo1.png';
 import Sidebar from './Sidebar';
 
 const Header = () => {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true); 
 
-    // Función para alternar el Sidebar
+    // Function to toggle the Sidebar
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
     };
@@ -14,15 +14,13 @@ const Header = () => {
     return (
         <>
             <header className="bg-white flex justify-between items-center shadow-lg z-50">
-
                 <Link to="/" className="flex items-center">
                     <img src={logo} alt="logo" className="h-30" />
                 </Link>
 
-
                 <button
                     onClick={toggleSidebar}
-                    className="px-4 text-black focus:outline-none"
+                    className="px-4 text-black cursor-pointer focus:outline-none"
                     aria-label="Abrir menú"
                 >
                     <svg
@@ -45,19 +43,23 @@ const Header = () => {
             <div
                 className={`fixed inset-y-0 right-0 w-64 bg-[#113872] transform ${
                     isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
-                } transition-transform duration-300 ease-in-out z-40`}
+                } transition-transform duration-1000 ease-in-out z-40 ${
+                    isSidebarOpen ? 'visible' : 'invisible'
+                }`}
             >
                 <Sidebar />
             </div>
 
+            {/* Backdrop */}
             {isSidebarOpen && (
                 <div
-                    className="fixed inset-0 z-30"
+                    className="fixed bg-black/50 inset-0 z-30" // Ensure z-index is lower than Sidebar
                     onClick={toggleSidebar}
                 />
             )}
         </>
     );
 };
+
 
 export default Header;

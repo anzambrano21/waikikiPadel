@@ -23,7 +23,7 @@ function Principal() {
                     <button 
                         type="button" 
                         id="CardCrearReservacion" 
-                        className="py-6 p-4 border rounded-lg cursor-pointer" 
+                        className="py-6 p-4 border border-black rounded-lg cursor-pointer"
                         onClick={handleReservacion} 
                     >
                         <p className="text-3xl">+</p>

@@ -29,26 +29,8 @@ const SidebarClient = () => {
                             Perfil
                         </Link>
                     </li>
-                    <li className="w-full">
-                        <Link
-                            to="/reservas"
-                            className={`block w-full py-2 text-center hover:bg-[#1a4a8a] rounded transition-colors ${
-                                isActive('/reservas') ? 'bg-gray-500' : ''
-                            }`}
-                        >
-                            Reservas
-                        </Link>
-                    </li>
-                    <li className="w-full">
-                        <Link
-                            to="/usuarios"
-                            className={`block w-full py-2 text-center hover:bg-[#1a4a8a] rounded transition-colors ${
-                                isActive('/usuarios') ? 'bg-gray-500' : ''
-                            }`}
-                        >
-                            Usuarios
-                        </Link>
-                    </li>
+
+
                     {/* Elemento "Salir" en la parte inferior */}
                     <li className="mt-auto w-full">
                         <button
