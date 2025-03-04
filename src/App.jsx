@@ -6,6 +6,7 @@ import Usuarios from './pages/Admin/Usuarios.jsx';
 import Principal from './pages/Client/Principal.jsx';
 import CanchasC from './pages/Client/Canchas.jsx';
 import Reservar from './pages/Client/Reservar.jsx';
+import MetodosPago from './pages/Client/MetodosPago.jsx';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path='/principal' element={<Principal/>}/>
         <Route path='/canchasdispo' element={<CanchasC/>}/>
         <Route path='/reservar' element={<Reservar/>}/>
+        <Route path='/metodospago' element={<MetodosPago/>}/>
 
       </Routes>
     </BrowserRouter>
