@@ -43,9 +43,7 @@ const Header = () => {
             <div
                 className={`fixed inset-y-0 right-0 w-64 bg-[#113872] transform ${
                     isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
-                } transition-transform duration-1000 ease-in-out z-40 ${
-                    isSidebarOpen ? 'visible' : 'invisible'
-                }`}
+                } transition-transform duration-600 ease-in-out z-40`}
             >
                 <Sidebar />
             </div>

@@ -24,7 +24,7 @@ function Principal() {
                         type="button" 
                         id="CardCrearReservacion" 
                         className="py-6 p-4 border border-black rounded-lg cursor-pointer"
-                        onClick={handleReservacion} 
+                        onClick={handleReservacion}
                     >
                         <p className="text-3xl">+</p>
                         <p className="text-xl">Reserva tu cancha</p>
