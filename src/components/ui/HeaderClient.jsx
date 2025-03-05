@@ -15,7 +15,7 @@ const HeaderClient = () => {
             <header className="bg-white flex justify-between items-center p-4 shadow-lg z-50">
 
                 <Link to="/" className="flex items-center">
-                    <img src={logo} alt="logo" className="w-20" />
+                    <img src={logo} alt="logo" className="w-30" />
                 </Link>
 
                 {/* Menú Hamburguesa */}
