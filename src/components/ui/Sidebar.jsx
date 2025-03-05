@@ -10,7 +10,7 @@ const Sidebar = () => {
         <div className="h-full flex flex-col bg-[#113872]">
             {/* Logo */}
             <div className='flex justify-center'>
-                <Link to="/">
+                <Link to="/pagos">
                     <img className="w-30" src={logo} alt="logo" />
                 </Link>
             </div>
@@ -20,7 +20,7 @@ const Sidebar = () => {
                 <ul className="flex flex-col items-center list-none text-white flex-grow w-full py-7">
                     {/* Opciones del menú con íconos */}
                     <MenuItem
-                        to="/"
+                        to="/pagos"
                         text="Pagos"
                         currentPath={location.pathname}
                         icon={<BanknotesIcon className="w-5 h-5" />} // Ícono de Pagos

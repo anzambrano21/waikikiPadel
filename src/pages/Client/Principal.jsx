@@ -4,12 +4,6 @@ import LayoutClient from "../../layout/LayoutClient";
 import CardCancha from "../../components/CardCancha"; // Importar el componente CardCancha
 
 function Principal() {
-    const [cont, setCont] = useState(0);
-
-    // Función para incrementar el contador
-    const handleReservacion = () => {
-        setCont(cont + 1);
-    };
 
     // Datos de ejemplo para las canchas
     const canchas = [
