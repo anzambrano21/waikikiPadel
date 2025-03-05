@@ -7,6 +7,8 @@ import Principal from './pages/Client/Principal.jsx';
 import CanchasC from './pages/Client/Canchas.jsx';
 import Reservar from './pages/Client/Reservar.jsx';
 import MetodosPago from './pages/Client/MetodosPago.jsx';
+import IniciarSesion from './pages/Client/IniciarSesion.jsx';
+import Regitrarse from './pages/Client/Registrarse.jsx';
 
 function App() {
   return (
@@ -20,7 +22,8 @@ function App() {
         <Route path='/canchasdispo' element={<CanchasC/>}/>
         <Route path='/reservar' element={<Reservar/>}/>
         <Route path='/metodospago' element={<MetodosPago/>}/>
-
+        <Route path='/iniciarsesion' element={<IniciarSesion/>}/>
+        <Route path='/registrarse' element={<Regitrarse/>}/>
       </Routes>
     </BrowserRouter>
   )

@@ -54,9 +54,9 @@ function Reservar() {
                     </div>
 
                     <div className="flex justify-center">
-                        <Link>
+                        <Link to="/metodospago">
                             <button className="bg-blue-700 text-white rounded-full w-md p-4">
-                                Metodos de Pago
+                                Reservar
                             </button>
                         </Link>
                     </div>
