@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { Link, useLocation } from "react-router";
-import LayoutClient from "../../layout/LayoutClient";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router"; 
+import LayoutClient from "../../layout/LayoutClient.jsx";
 import CanchaImg from "../../assets/canchaPadel.jpg";
 
 function Reservar() {
@@ -9,26 +9,51 @@ function Reservar() {
     const canchaId = searchParams.get("cancha");
     const fechaInicial = searchParams.get("fecha");
 
-    // Formatear la fecha inicial a yyyy-mm-dd
-    const formatDate = (dateString) => {
-        if (!dateString) return new Date().toISOString().split("T")[0]; // Fecha actual en yyyy-mm-dd
-        const [day, month, year] = dateString.split("/");
-        return `${year}-${month}-${day}`; // Convertir dd/mm/yyyy a yyyy-mm-dd
+    const [fechaSeleccionada, setFechaSeleccionada] = useState(fechaInicial || new Date().toISOString().split("T")[0]);
+    const [horasSeleccionadas, setHorasSeleccionadas] = useState([]);
+    const [errorFecha, setErrorFecha] = useState(""); // Estado para el mensaje de error
+
+    // Obtener la fecha actual en formato YYYY-MM-DD
+    const fechaActual = new Date().toISOString().split("T")[0];
+
+    // Validar la fecha seleccionada
+    const validarFecha = (fecha) => {
+        if (fecha < fechaActual) {
+            setErrorFecha("No se pueden seleccionar fechas anteriores al día actual.");
+            return false;
+        } else {
+            setErrorFecha(""); // Limpiar el mensaje de error si la fecha es válida
+            return true;
+        }
     };
 
-    const [fechaSeleccionada, setFechaSeleccionada] = useState(formatDate(fechaInicial));
-    const [horasSeleccionadas, setHorasSeleccionadas] = useState([]);
+    // Actualiza el estado cuando cambia la fecha de la URL
+    useEffect(() => {
+        if (fechaInicial) {
+            setFechaSeleccionada(fechaInicial);
+            validarFecha(fechaInicial); // Validar la fecha inicial
+        }
+    }, [fechaInicial]);
 
+    // Manejar el cambio de fecha
+    const handleFechaChange = (e) => {
+        const nuevaFecha = e.target.value;
+        setFechaSeleccionada(nuevaFecha);
+        validarFecha(nuevaFecha); // Validar la nueva fecha
+    };
+
+    // Manejar el clic en una hora
     const handleHoraClick = (hora) => {
+        if (fechaSeleccionada < fechaActual) {
+            setErrorFecha("No se pueden seleccionar horas para fechas pasadas.");
+            return; // No permitir seleccionar horas si la fecha es inválida
+        }
+
         if (horasSeleccionadas.includes(hora)) {
             setHorasSeleccionadas(horasSeleccionadas.filter(h => h !== hora));
         } else {
             setHorasSeleccionadas([...horasSeleccionadas, hora]);
         }
-    };
-
-    const handleFechaChange = (e) => {
-        setFechaSeleccionada(e.target.value); // Actualizar la fecha seleccionada
     };
 
     const montoTotal = horasSeleccionadas.length * 10; // Precio por hora
@@ -57,10 +82,18 @@ function Reservar() {
                                 type="date"
                                 value={fechaSeleccionada}
                                 onChange={handleFechaChange}
+                                min={fechaActual} // Establecer la fecha mínima como el día actual
                                 className="shadow w-xs p-4"
                             />
                         </div>
                     </div>
+
+                    {/* Mostrar mensaje de error si la fecha es inválida */}
+                    {errorFecha && (
+                        <div className="text-red-500 text-center my-2">
+                            {errorFecha}
+                        </div>
+                    )}
 
                     <div id="contHoras" className="flex flex-col my-1">
                         <h2 className="text-xl font-bold my-2 text-blue-950">Horas disponibles</h2>

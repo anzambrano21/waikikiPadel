@@ -1,10 +1,8 @@
-import React, { useState } from "react";
-import { Link } from "react-router";
-import LayoutClient from "../../layout/LayoutClient";
-import CardCancha from "../../components/CardCancha"; // Importar el componente CardCancha
+import { Link } from "react-router"; // Cambia a 'react-router-dom'
+import LayoutClient from "../../layout/LayoutClient.jsx";
+import CardCancha from "../../components/CardCancha.jsx"; 
 
 function Principal() {
-
     // Datos de ejemplo para las canchas
     const canchas = [
         {
@@ -19,13 +17,14 @@ function Principal() {
             precio: 12,
             horarios: ["10:00am", "11:00am", "12:00pm", "1:00pm"],
         },
-                {
-            id: 2,
-            nombre: "Cancha 2",
+        {
+            id: 3,
+            nombre: "Cancha 3",
             precio: 12,
             horarios: ["10:00am", "11:00am", "12:00pm", "1:00pm"],
         },
     ];
+
 
     return (
         <LayoutClient>
@@ -38,7 +37,7 @@ function Principal() {
                     <button
                         type="button"
                         id="CardCrearReservacion"
-                        className=" py-6 p-4 border border-black rounded-lg cursor-pointer"
+                        className="py-6 p-4 border border-black rounded-lg cursor-pointer"
                     >
                         <p className="text-3xl">+</p>
                         <p className="text-xl">Reserva tu cancha</p>
@@ -49,15 +48,19 @@ function Principal() {
                     <h1 className="text-3xl my-4">Canchas Disponibles</h1>
 
                     <div id="canchasCont" className="flex flex-wrap">
-                        {canchas.map((cancha) => (
-                            <CardCancha
-                                key={cancha.id}
-                                id={cancha.id}
-                                nombre={cancha.nombre}
-                                precio={cancha.precio}
-                                horarios={cancha.horarios}
-                            />
-                        ))}
+                        {canchas.map((cancha) => {
+                            const fechaActual = new Date().toLocaleDateString('en-CA'); // Fecha actual en YYYY-MM-DD
+                            return (
+                                <CardCancha
+                                    key={cancha.id}
+                                    id={cancha.id}
+                                    nombre={cancha.nombre}
+                                    precio={cancha.precio}
+                                    horarios={cancha.horarios}
+                                    fecha={fechaActual} // Pasar la fecha en formato YYYY-MM-DD
+                                />
+                            );
+                        })}
                     </div>
                 </div>
             </div>
