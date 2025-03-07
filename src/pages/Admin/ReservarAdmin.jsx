@@ -132,7 +132,7 @@ function ReservarAdmin() {
                 </div>
 
                 {horasSeleccionadas.length > 0 && (
-                    <div className="sticky bottom-0 left-0 right-0 bg-white p-4 shadow-lg md:ml-[16.6667%] flex justify-center">
+                    <div className="sticky bottom-0 left-0 right-0 bg-white p-4 shadow-lg flex justify-center">
                         <Link to={`/metodospagoadmin?cancha=${canchaId}&fecha=${fechaSeleccionada}&horas=${horasSeleccionadas.join(',')}`}>
                             <button className="bg-blue-700 text-white rounded-full w-md p-3">
                                 Métodos de Pago
