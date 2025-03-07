@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router"; // Asegúrate de importar desde 'react-router-dom'
 import { useState } from "react";
-import LayoutClient from "../../layout/LayoutClient.jsx";
+import LayoutAdmin from "../../layout/LayoutAdmin.jsx";
 import { MetodoPago } from "../../components/MetodoPago.jsx";
 
-function MetodosPago() {
+function MetodoPagoAdmin() {
     const [metodoSeleccionado, setMetodoSeleccionado] = useState(null);
     const [imagenPagoMovil, setImagenPagoMovil] = useState(null);
     const [imagenZelle, setImagenZelle] = useState(null);
@@ -63,12 +63,13 @@ function MetodosPago() {
 
         setError("");
         console.log("Reserva exitosa");
-        navigate("/principal");
+        navigate("/pagos");
     };
 
+
     return (
-        <LayoutClient>
-            <div className="flex justify-center min-h-screen p-2">
+        <LayoutAdmin>
+<div className="flex justify-center min-h-screen p-2">
                 <div className="flex flex-col items-center w-full max-w-md">
                     <div className="border border-gray-500 rounded-xl w-full shadow-lg">
                         <div className="p-2">
@@ -135,7 +136,8 @@ function MetodosPago() {
                 </div>
             </div>
 
-            <div className="fixed bottom-0 left-0 right-0 flex justify-center p-4 bg-white shadow-lg">
+            {/* Botón de Reservar */}
+            <div className="sticky bottom-0 left-0  bg-white p-4 shadow-lg  flex justify-center">
                 <button
                     onClick={handleReservar}
                     className="bg-blue-700 text-white rounded-full w-md p-3"
@@ -143,8 +145,8 @@ function MetodosPago() {
                     Reservar
                 </button>
             </div>
-        </LayoutClient>
+        </LayoutAdmin>
     );
 }
 
-export default MetodosPago;
+export default MetodoPagoAdmin;

@@ -3,55 +3,112 @@ import LayoutRegistrarse from "../../layout/LayoutRegistrarse";
 import logo from '../../assets/logo1.png';
 import defaultUser from '../../assets/defaultUser.jpg';
 import { useState, useEffect } from "react";
+import Select from "react-select";
 
 function Registrarse() {
     const [countries, setCountries] = useState([]);
-    const [selectedCountry, setSelectedCountry] = useState("");
+    const [selectedCountry, setSelectedCountry] = useState(null);
     const [profileImage, setProfileImage] = useState(null);
+    const [errors, setErrors] = useState({});
 
-    // Función para manejar la selección de la imagen
+    const [nombre, setNombre] = useState("");
+    const [telefono, setTelefono] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
     const handleImageChange = (event) => {
-        const file = event.target.files[0]; // Obtener el archivo seleccionado
+        const file = event.target.files[0];
         if (file) {
-            const reader = new FileReader(); // Crear un FileReader para leer el archivo
+            const reader = new FileReader();
             reader.onloadend = () => {
-                setProfileImage(reader.result); // Guardar la imagen en el estado
+                setProfileImage(reader.result);
             };
-            reader.readAsDataURL(file); // Leer el archivo como una URL
+            reader.readAsDataURL(file);
         }
     };
 
-    // Llamada a la API para obtener los códigos de país y banderas
     useEffect(() => {
         fetch("https://restcountries.com/v3.1/all")
-            .then(response => response.json())
-            .then(data => {
-                const countryList = data.map(country => ({
-                    code: country.cca2,
-                    name: country.name.common,
-                    flag: country.flags.png
+            .then((response) => response.json())
+            .then((data) => {
+                const countryList = data.map((country) => ({
+                    value: country.idd.root + (country.idd.suffixes ? country.idd.suffixes[0] : ""),
+                    flag: country.flags.png,
                 }));
                 setCountries(countryList);
             })
-            .catch(error => console.error("Error fetching countries:", error));
+            .catch((error) => console.error("Error fetching countries:", error));
     }, []);
 
-    const handleCountryChange = (event) => {
-        setSelectedCountry(event.target.value);
+    const handleCountryChange = (selectedOption) => {
+        setSelectedCountry(selectedOption);
+    };
+
+    const formatOptionLabel = ({ value, flag }) => (
+        <div style={{ display: "flex", alignItems: "center" }}>
+            <img src={flag} alt={value} style={{ width: "20px" }} />
+            <span>{value}</span>
+        </div>
+    );
+
+    const validateForm = () => {
+        const newErrors = {};
+
+        if (!nombre.trim()) {
+            newErrors.nombre = "El nombre es obligatorio.";
+        } else if (nombre.trim().length < 2) {
+            newErrors.nombre = "El nombre debe tener al menos 2 caracteres.";
+        }
+
+        if (!telefono.trim()) {
+            newErrors.telefono = "El número de teléfono es obligatorio.";
+        } else if (!/^\d+$/.test(telefono)) {
+            newErrors.telefono = "El número de teléfono debe ser válido.";
+        }
+
+        if (!email.trim()) {
+            newErrors.email = "El correo electrónico es obligatorio.";
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            newErrors.email = "El correo electrónico no es válido.";
+        }
+
+        if (!password.trim()) {
+            newErrors.password = "La contraseña es obligatoria.";
+        } else if (password.trim().length < 6) {
+            newErrors.password = "La contraseña debe tener al menos 6 caracteres.";
+        }
+
+        if (!selectedCountry) {
+            newErrors.pais = "Debes seleccionar un país.";
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        if (validateForm()) {
+            console.log("Formulario válido. Datos:", {
+                nombre,
+                telefono,
+                email,
+                password,
+                selectedCountry,
+                profileImage,
+            });
+        } else {
+            console.log("Formulario inválido. Corrige los errores.");
+        }
     };
 
     return (
         <LayoutRegistrarse>
-            {/* Contenedor principal para centrar el contenido */}
-            <div className="min-h-screen flex flex-col justify-center items-center p-2">
-                {/* Contenedor para el logo y la imagen de perfil */}
+            <div className="min-h-screen flex flex-col justify-center items-center">
                 <div className="flex flex-col items-center">
-                    {/* Logo */}
-                    <img className="w-30 mb-4" src={logo} alt="logo" />
-
-                    {/* Contenedor de la imagen de perfil */}
-                    <div className="mb-4 rounded-full w-24 h-24 flex justify-center items-center overflow-hidden relative group">
-                        {/* Input de archivo oculto */}
+                    <img className="w-20 mb-4" src={logo} alt="logo" />
+                    <div className="mb-4 rounded-full w-20 h-20 flex justify-center items-center overflow-hidden relative group">
                         <input
                             type="file"
                             id="profileImageInput"
@@ -59,24 +116,20 @@ function Registrarse() {
                             accept="image/*"
                             onChange={handleImageChange}
                         />
-                        {/* Imagen predeterminada o seleccionada */}
                         <label htmlFor="profileImageInput" className="cursor-pointer w-full h-full">
                             {profileImage ? (
-                                // Mostrar la imagen seleccionada
                                 <img
                                     src={profileImage}
                                     alt="Foto de perfil"
                                     className="w-full h-full object-cover"
                                 />
                             ) : (
-                                // Mostrar la imagen predeterminada
                                 <img
-                                    src={defaultUser} // Ruta de la imagen predeterminada
+                                    src={defaultUser}
                                     alt="Foto de perfil predeterminada"
                                     className="w-full h-full object-cover"
                                 />
                             )}
-                            {/* Efecto hover con fondo oscuro y ícono de editar */}
                             <div className="absolute inset-0 bg-black/50 flex justify-center items-center opacity-0 group-hover:opacity-100 transition-opacity">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -97,63 +150,76 @@ function Registrarse() {
                     </div>
                 </div>
 
-                {/* Contenedor del formulario */}
-                <div className="flex w-80 flex-col">
-                    {/* Campo para el nombre */}
+                <form onSubmit={handleSubmit} className="flex w-80 flex-col max-h-[80vh] overflow-y-auto">
                     <div className="mb-2">
                         <label className="block text-sm font-medium text-gray-700">Nombre</label>
-                        <input type="text" className="mt-1 block w-full p-2 border border-gray-300 rounded-md" />
+                        <input
+                            type="text"
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                            value={nombre}
+                            onChange={(e) => setNombre(e.target.value)}
+                        />
+                        {errors.nombre && <p className="text-red-500 text-sm mt-1">{errors.nombre}</p>}
                     </div>
 
-                    {/* Campo para el apellido */}
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700">Apellido</label>
-                        <input type="text" className="mt-1 block w-full p-2 border border-gray-300 rounded-md" />
-                    </div>
-
-                    {/* Campo para el número de teléfono con selector de país */}
-                    <div className="mb-4">
+                    <div className="mb-2">
                         <label className="block text-sm font-medium text-gray-700">Número de teléfono</label>
-                        <div className="flex">
-                            <select
-                                className="mt-1 block w-1/4 p-2 border border-gray-300 rounded-md mr-2"
+                        <div className="flex items-center">
+                            <Select
+                                options={countries}
                                 value={selectedCountry}
                                 onChange={handleCountryChange}
-                            >
-                                <option value="">Selecciona un país</option>
-                                {countries.map(country => (
-                                    <option key={country.code} value={country.code}>
-                                        <img className="w-5" src={country.flag} alt="" />
-                                        {country.name} (+{country.code})
-                                    </option>
-                                ))}
-                            </select>
-                            <input type="text" className="mt-1 block w-3/4 p-2 border border-gray-300 rounded-md" />
+                                formatOptionLabel={formatOptionLabel}
+                                placeholder="Codigo"
+                                className="w-60 h-full"
+                            />
+                            <input
+                                type="text"
+                                className="mt-1 block w-full p-2 border border-gray-300 rounded-md ml-2 h-full"
+                                placeholder="Número de teléfono"
+                                value={telefono}
+                                onChange={(e) => setTelefono(e.target.value)}
+                            />
                         </div>
+                        {errors.telefono && <p className="text-red-500 text-sm mt-1">{errors.telefono}</p>}
                     </div>
 
-                    {/* Campo para el correo electrónico */}
-                    <div className="mb-4">
+                    <div className="mb-2">
                         <label className="block text-sm font-medium text-gray-700">Correo electrónico</label>
-                        <input type="email" className="mt-1 block w-full p-2 border border-gray-300 rounded-md" />
+                        <input
+                            type="email"
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                     </div>
 
-                    {/* Campo para la contraseña */}
-                    <div className="mb-4">
+                    <div className="mb-2">
                         <label className="block text-sm font-medium text-gray-700">Contraseña</label>
-                        <input type="password" className="mt-1 block w-full p-2 border border-gray-300 rounded-md" />
+                        <input
+                            type="password"
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
                     </div>
 
-                    {/* Enlace para registrarse */}
-                    <Link to="/">
+                    <Link to="/iniciarsesion">
                         <p className="text-blue-600 underline mb-4">¿Tienes una cuenta?</p>
                     </Link>
 
                     {/* Botón de Registrarse */}
-                    <button className="rounded-lg bg-blue-600 py-2 text-sm font-bold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer">
-                        Registrarse
-                    </button>
-                </div>
+                    <div className="sticky bottom-0 bg-white py-2">
+                        <button
+                            type="submit"
+                            className="rounded-lg bg-blue-600 py-2 text-sm font-bold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer w-full"
+                        >
+                            Registrarse
+                        </button>
+                    </div>
+                </form>
             </div>
         </LayoutRegistrarse>
     );

@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Estilos personalizados para la barra de desplazamiento */
+/* En tu archivo CSS global o de módulo */
 .horarios-container::-webkit-scrollbar {
     height: 6px; /* Altura de la barra de desplazamiento */
     opacity: 0; /* Barra de desplazamiento invisible por defecto */
@@ -19,4 +19,15 @@
 .horarios-container::-webkit-scrollbar-track {
     background-color: #f1f1f1; /* Color del track (fondo de la barra) */
     border-radius: 4px; /* Bordes redondeados */
+    margin-top: 6px;
+}
+
+/* En tu archivo CSS global o de módulo */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Oculta la barra de scroll en Chrome, Safari y Edge */
+}
+
+.scrollbar-hide {
+    -ms-overflow-style: none; /* Oculta la barra de scroll en IE y Edge */
+    scrollbar-width: none; /* Oculta la barra de scroll en Firefox */
 }

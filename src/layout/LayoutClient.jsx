@@ -1,9 +1,9 @@
 import React from 'react';
 import HeaderClient from '../components/ui/HeaderClient';
 
-export default function LayoutAdmin({ children }) {
+export default function LayoutClient({ children }) {
     return (
-        <div className="flex flex-col w-screen overflow-x-hidden"> {/* Agrega overflow-x-hidden aquí */}
+        <div className="flex flex-col w-screen overflow-x-hidden">
             {/* Header (solo visible en móvil) */}
             <div className="block">
                 <HeaderClient />

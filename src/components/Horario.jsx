@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router";
+import { Link } from "react-router"; // Cambia a 'react-router-dom'
 
 function Horario({ canchaId, horario, fecha }) {
     return (

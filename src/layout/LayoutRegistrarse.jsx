@@ -12,7 +12,6 @@ function LayoutConFormulario({ children }) {
 
     return (
         <div className="min-h-screen flex flex-col md:flex-row">
-
             {/* Columna izquierda: Imagen (oculta en móviles, visible en pantallas md y superiores) */}
             <div className="hidden md:block md:w-1/2 bg-gray-200">
                 <img
@@ -26,8 +25,6 @@ function LayoutConFormulario({ children }) {
             <div className="w-full md:w-1/2 flex flex-col justify-center items-center bg-white overflow-y-auto p-4">
                 {children}
             </div>
-
-
         </div>
     );
 }

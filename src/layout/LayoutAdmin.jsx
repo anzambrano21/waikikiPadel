@@ -1,6 +1,6 @@
 import React from 'react';
-import Sidebar from '../components/ui/Sidebar';
-import Header from '../components/ui/Header';
+import Sidebar from '../components/ui/Sidebar.jsx';
+import Header from '../components/ui/Header.jsx';
 
 export default function LayoutAdmin({ children }) {
     return (
@@ -17,7 +17,7 @@ export default function LayoutAdmin({ children }) {
                 </aside>
 
                 {/* Contenido principal */}
-                <main className="w-full md:w-10/12 p-3 overflow-y-auto h-full">
+                <main className="w-full md:w-10/12 overflow-y-auto h-full">
                     {children}
                 </main>
             </div>

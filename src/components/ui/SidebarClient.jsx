@@ -1,13 +1,10 @@
-import { Link, useLocation } from 'react-router';
+import { Link } from 'react-router';
 import logo from '../../assets/logo.png';
+import MenuItemClient from '../MenuItemClient.jsx'; 
+import { UserIcon } from '@heroicons/react/24/outline'; 
+
 
 const SidebarClient = () => {
-    const location = useLocation(); // Obtiene la ruta actual
-
-    // Función para verificar si la ruta está activa
-    const isActive = (path) => {
-        return location.pathname === path;
-    };
 
     return (
         <div className="h-full flex flex-col bg-white">
@@ -19,23 +16,18 @@ const SidebarClient = () => {
             {/* Navegación */}
             <nav className="flex flex-col flex-grow">
                 <ul className="flex flex-col items-center list-none text-gray flex-grow">
-                    <li className="w-full">
-                        <Link
-                            to="/canchas"
-                            className={`block w-full py-2 text-center hover:bg-[#1a4a8a] rounded transition-colors ${
-                                isActive('/canchas') ? 'bg-gray-500' : ''
-                            }`}
-                        >
-                            Perfil
-                        </Link>
-                    </li>
-
+                    <MenuItemClient
+                        to="/pagos"
+                        text="Pagos"
+                        currentPath={location.pathname}
+                        icon={<UserIcon className="w-5 h-5" />} // Ícono de Pagos
+                    />
 
                     {/* Elemento "Salir" en la parte inferior */}
                     <li className="mt-auto w-full">
                         <button
                             onClick={() => alert('Cerrando sesión...')}
-                            className="block w-full py-2 text-center hover:bg-[#1a4a8a] rounded transition-colors"
+                            className="block w-full py-2 text-center hover:bg-gray-600/50 hover:text-white rounded transition-colors"
                         >
                             Salir
                         </button>

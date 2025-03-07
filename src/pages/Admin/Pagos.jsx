@@ -3,14 +3,14 @@ import LayoutAdmin from "../../layout/LayoutAdmin";
 function Pagos() {
     return (
         <LayoutAdmin>
-            <div className="p-2">
+            <div className="p-4">
                 <div>
                     <h1 className="text-5xl">Pagos</h1>
                 </div>
 
                 <div className="my-4">
                     <input
-                        className="border rounded-full p-2 px-3"
+                        className="border border-gray-400 shadow-xl rounded-full p-2 px-3 focus:border-blue-900/75 focus:ring-1 focus:ring-blue-900/75 focus:outline-none"
                         type="text"
                         placeholder="Juan Perez"
                     />

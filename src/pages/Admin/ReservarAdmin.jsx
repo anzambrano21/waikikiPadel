@@ -1,9 +1,9 @@
+import LayoutAdmin from "../../layout/LayoutAdmin.jsx";
 import React, { useState, useEffect } from "react";
 import { useLocation, Link } from "react-router"; // Cambia a 'react-router-dom'
-import LayoutClient from "../../layout/LayoutClient.jsx";
 import CanchaImg from "../../assets/canchaPadel.jpg";
 
-function Reservar() {
+function ReservarAdmin() {
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
     const canchaId = searchParams.get("cancha");
@@ -62,7 +62,7 @@ function Reservar() {
     const montoTotal = horasSeleccionadas.length * 10;
 
     return (
-        <LayoutClient>
+        <LayoutAdmin>
             <div className="flex flex-col min-h-screen">
                 <img
                     src={CanchaImg}
@@ -132,8 +132,8 @@ function Reservar() {
                 </div>
 
                 {horasSeleccionadas.length > 0 && (
-                    <div className="fixed bottom-0 left-0 right-0 flex justify-center p-4 bg-white shadow-lg">
-                        <Link to={`/metodospago?cancha=${canchaId}&fecha=${fechaSeleccionada}&horas=${horasSeleccionadas.join(',')}`}>
+                    <div className="sticky bottom-0 left-0 right-0 bg-white p-4 shadow-lg md:ml-[16.6667%] flex justify-center">
+                        <Link to={`/metodospagoadmin?cancha=${canchaId}&fecha=${fechaSeleccionada}&horas=${horasSeleccionadas.join(',')}`}>
                             <button className="bg-blue-700 text-white rounded-full w-md p-3">
                                 Métodos de Pago
                             </button>
@@ -141,8 +141,8 @@ function Reservar() {
                     </div>
                 )}
             </div>
-        </LayoutClient>
+        </LayoutAdmin>
     );
 }
 
-export default Reservar;
+export default ReservarAdmin;

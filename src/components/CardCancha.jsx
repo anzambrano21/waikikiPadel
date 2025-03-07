@@ -14,10 +14,10 @@ function CardCancha({ id, nombre, precio, horarios, fecha }) {
     return (
         <div
             id="cardCancha"
-            className="my-2 shadow-xl w-md rounded-md mr-10 cursor-pointer" // Agrega cursor-pointer para indicar que es clickeable
+            className="my-2 shadow-xl w-full md:w-sm md:mx-4 md:mr-4 rounded-md cursor-pointer transform transition-transform duration-300 md:hover:scale-105" // Efecto de hover solo en md
             onClick={handleCardClick} // Asigna la función al evento onClick
         >
-            <img src={CanchaImg} alt="canchaPadel" className="w-full h-30 object-cover" />
+            <img src={CanchaImg} alt="canchaPadel" className="w-full h-30 object-cover rounded-t-md" />
             <div className="p-4">
                 <div className="flex align-items-center text-center justify-between">
                     <h3 className="text-2xl font-bold">{nombre}</h3>
@@ -29,7 +29,12 @@ function CardCancha({ id, nombre, precio, horarios, fecha }) {
 
                 <div className="flex my-1 overflow-x-auto scroll-m-0 horarios-container h-15">
                     {horarios.map((horario, index) => (
-                        <Horario key={index} canchaId={id} horario={horario} fecha={fecha} />
+                        <Horario
+                            key={index}
+                            canchaId={id}
+                            horario={horario}
+                            fecha={fecha}
+                        />
                     ))}
                 </div>
             </div>
