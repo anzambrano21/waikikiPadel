@@ -1,9 +1,29 @@
-import { useNavigate } from "react-router"; // Asegúrate de importar desde 'react-router-dom'
-import { useState } from "react";
+import React, { useState} from "react";
+import { useLocation, useNavigate } from "react-router";
 import LayoutClient from "../../layout/LayoutClient.jsx";
 import { MetodoPago } from "../../components/MetodoPago.jsx";
 
 function MetodosPago() {
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const canchaId = searchParams.get("cancha");
+    const fecha = searchParams.get("fecha");
+    const horariosIds = searchParams.get("horarios").split(",");
+    const montoTotal = searchParams.get("montoTotal");
+
+    // Datos de ejemplo (reemplaza esto con una llamada a tu API)
+    const horariosDisponibles = [
+        { id: 1, cancha_id: 1, dia: "2023-10-01", horaInicio: "10:00 AM", horaFin: "11:00 AM", estado: "disponible" },
+        { id: 2, cancha_id: 1, dia: "2023-10-01", horaInicio: "11:00 AM", horaFin: "12:00 PM", estado: "disponible" },
+        { id: 3, cancha_id: 1, dia: "2023-10-01", horaInicio: "12:00 PM", horaFin: "1:00 PM", estado: "disponible" },
+        { id: 4, cancha_id: 1, dia: "2023-10-01", horaInicio: "1:00 PM", horaFin: "2:00 PM", estado: "disponible" },
+    ];
+
+    // Filtrar los horarios seleccionados
+    const horariosSeleccionados = horariosDisponibles.filter(horario =>
+        horariosIds.includes(horario.id.toString())
+    );
+
     const [metodoSeleccionado, setMetodoSeleccionado] = useState(null);
     const [imagenPagoMovil, setImagenPagoMovil] = useState(null);
     const [imagenZelle, setImagenZelle] = useState(null);
@@ -76,16 +96,19 @@ function MetodosPago() {
                         </div>
 
                         <div className="flex justify-between items-center my-4 p-2">
-                            <h2 className="text-xl font-bold text-green-600">Cancha 1</h2>
-                            <p className="text-blue-950 font-bold">08/17/2025</p>
+                            <h2 className="text-xl font-bold text-green-600">Cancha {canchaId}</h2>
+                            <p className="text-blue-950 font-bold">{fecha}</p>
                         </div>
 
-                        <div className="flex justify-center items-center my-4 font-bold">
-                            <p className="m-2">Desde:</p>
-                            <p className="m-2 font-semibold text-white p-2 rounded-xl text-center w-25 bg-blue-950">10:00am</p>
-                            <p className="m-2">Hasta:</p>
-                            <p className="m-2 font-semibold text-white p-2 rounded-xl text-center w-25 bg-blue-950">11:00am</p>
-                        </div>
+                        {/* Mostrar los rangos de horas seleccionadas */}
+                        {horariosSeleccionados.map((horario) => (
+                            <div key={horario.id} className="flex justify-center items-center my-4 font-bold">
+                                <p className="m-2">Desde:</p>
+                                <p className="m-2 font-semibold text-white p-2 rounded-xl text-center w-25 bg-blue-950">{horario.horaInicio}</p>
+                                <p className="m-2">Hasta:</p>
+                                <p className="m-2 font-semibold text-white p-2 rounded-xl text-center w-25 bg-blue-950">{horario.horaFin}</p>
+                            </div>
+                        ))}
 
                         <div className="flex flex-col font-bold text-blue-950">
                             <h3 className="text-xl font-bold mb-2 p-2">Métodos de Pago</h3>
@@ -123,7 +146,7 @@ function MetodosPago() {
                     <div id="precioCont" className="w-full max-w-md mt-6">
                         <h3 className="text-xl font-bold">Monto a pagar</h3>
                         <div className="bg-[#113872] text-white text-center rounded p-2 my-2 shadow-md">
-                            <p className="text-2xl font-bold">10$</p>
+                            <p className="text-2xl font-bold">{montoTotal}$</p>
                         </div>
                     </div>
 

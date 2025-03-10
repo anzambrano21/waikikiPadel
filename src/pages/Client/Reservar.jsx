@@ -1,20 +1,27 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, Link } from "react-router"; // Cambia a 'react-router-dom'
+import { useLocation, useNavigate } from "react-router";
 import LayoutClient from "../../layout/LayoutClient.jsx";
-import CanchaImg from "../../assets/canchaPadel.jpg";
+import CanchaImg from "../../../public/canchaPadel.jpg";
 
 function Reservar() {
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
     const canchaId = searchParams.get("cancha");
     const fechaInicial = searchParams.get("fecha");
-    const horaInicial = searchParams.get("hora"); // Obtener la hora seleccionada desde la URL
 
     const [fechaSeleccionada, setFechaSeleccionada] = useState(fechaInicial || new Date().toISOString().split("T")[0]);
     const [horasSeleccionadas, setHorasSeleccionadas] = useState([]);
     const [errorFecha, setErrorFecha] = useState("");
 
     const fechaActual = new Date().toISOString().split("T")[0];
+
+    // Datos de ejemplo (reemplaza esto con una llamada a tu API)
+    const horariosDisponibles = [
+        { id: 1, cancha_id: 1, dia: "2023-10-01", horaInicio: "10:00 AM", horaFin: "11:00 AM", estado: "disponible" },
+        { id: 2, cancha_id: 1, dia: "2023-10-01", horaInicio: "11:00 AM", horaFin: "12:00 PM", estado: "disponible" },
+        { id: 3, cancha_id: 1, dia: "2023-10-01", horaInicio: "12:00 PM", horaFin: "1:00 PM", estado: "disponible" },
+        { id: 4, cancha_id: 1, dia: "2023-10-01", horaInicio: "1:00 PM", horaFin: "2:00 PM", estado: "disponible" },
+    ];
 
     // Validar la fecha seleccionada
     const validarFecha = (fecha) => {
@@ -27,16 +34,13 @@ function Reservar() {
         }
     };
 
-    // Actualiza el estado cuando cambia la fecha o la hora de la URL
+    // Actualiza el estado cuando cambia la fecha de la URL
     useEffect(() => {
         if (fechaInicial) {
             setFechaSeleccionada(fechaInicial);
             validarFecha(fechaInicial);
         }
-        if (horaInicial) {
-            setHorasSeleccionadas([horaInicial]); // Marcar la hora seleccionada
-        }
-    }, [fechaInicial, horaInicial]);
+    }, [fechaInicial]);
 
     // Manejar el cambio de fecha
     const handleFechaChange = (e) => {
@@ -46,20 +50,34 @@ function Reservar() {
     };
 
     // Manejar el clic en una hora
-    const handleHoraClick = (hora) => {
+    const handleHoraClick = (horario) => {
         if (fechaSeleccionada < fechaActual) {
             setErrorFecha("No se pueden seleccionar horas para fechas pasadas.");
             return;
         }
 
-        if (horasSeleccionadas.includes(hora)) {
-            setHorasSeleccionadas(horasSeleccionadas.filter(h => h !== hora));
+        if (horasSeleccionadas.includes(horario.id)) {
+            setHorasSeleccionadas(horasSeleccionadas.filter(id => id !== horario.id));
         } else {
-            setHorasSeleccionadas([...horasSeleccionadas, hora]);
+            setHorasSeleccionadas([...horasSeleccionadas, horario.id]);
         }
     };
 
-    const montoTotal = horasSeleccionadas.length * 10;
+    // Calcular el monto total
+    const precioPorHora = 10; // Precio por hora (puedes cambiarlo según tus necesidades)
+    const montoTotal = horasSeleccionadas.length * precioPorHora;
+
+    // Navegar a MetodosPago con los IDs de los horarios seleccionados y el monto total
+    const navigate = useNavigate();
+    const handleReservarClick = () => {
+        if (horasSeleccionadas.length === 0) {
+            setErrorFecha("Debes seleccionar al menos una hora.");
+            return;
+        }
+
+        // Navegar a MetodosPago con los IDs de los horarios seleccionados y el monto total
+        navigate(`/metodospago?cancha=${canchaId}&fecha=${fechaSeleccionada}&horarios=${horasSeleccionadas.join(",")}&montoTotal=${montoTotal}`);
+    };
 
     return (
         <LayoutClient>
@@ -101,18 +119,18 @@ function Reservar() {
                         <h2 className="text-xl font-bold my-2 text-blue-950">Horas disponibles</h2>
 
                         <ul className="flex justify-center flex-wrap">
-                            {["10:00am", "11:00am", "12:00pm", "1:00pm"].map((hora) => (
-                                <li key={hora}>
+                            {horariosDisponibles.map((horario) => (
+                                <li key={horario.id}>
                                     <div
                                         id="horario"
                                         className={`flex justify-center items-center border w-25 mr-2 mb-2 p-2 shadow-2xl rounded cursor-pointer ${
-                                            horasSeleccionadas.includes(hora)
+                                            horasSeleccionadas.includes(horario.id)
                                                 ? "bg-[#113872] text-white"
                                                 : "hover:bg-[#113872] hover:text-white"
                                         } duration-300 ease-in`}
-                                        onClick={() => handleHoraClick(hora)}
+                                        onClick={() => handleHoraClick(horario)}
                                     >
-                                        <p>{hora}</p>
+                                        <p>{horario.horaInicio}</p>
                                     </div>
                                 </li>
                             ))}
@@ -133,11 +151,12 @@ function Reservar() {
 
                 {horasSeleccionadas.length > 0 && (
                     <div className="fixed bottom-0 left-0 right-0 flex justify-center p-4 bg-white shadow-lg">
-                        <Link to={`/metodospago?cancha=${canchaId}&fecha=${fechaSeleccionada}&horas=${horasSeleccionadas.join(',')}`}>
-                            <button className="bg-blue-700 text-white rounded-full w-md p-3">
-                                Métodos de Pago
-                            </button>
-                        </Link>
+                        <button
+                            onClick={handleReservarClick}
+                            className="bg-blue-700 text-white rounded-full w-md p-3"
+                        >
+                            Métodos de Pago
+                        </button>
                     </div>
                 )}
             </div>

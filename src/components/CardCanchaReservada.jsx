@@ -2,7 +2,7 @@ import React from "react";
 
 function CardCanchaReservada() {
     return (
-        <div id="cardCancha" className="p-4 mr-2 w-70 md:w-90 border border-gray-500 shadow-xl rounded-md cursor-pointer mb-4"> {/* Agregamos mb-4 */}
+        <div id="cardCancha" className="p-4 mr-2 w-70 md:w-90 border border-gray-500 shadow rounded-md cursor-pointer mb-4"> {/* Agregamos mb-4 */}
             <div className="flex justify-between items-center">
                 <h3 className="text-xl font-bold">Cancha 1</h3>
                 <p className="text-sm bg-green-800 text-white rounded p-2">Jugando</p>

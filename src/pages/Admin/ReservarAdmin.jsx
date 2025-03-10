@@ -1,7 +1,6 @@
 import LayoutAdmin from "../../layout/LayoutAdmin.jsx";
 import React, { useState, useEffect } from "react";
 import { useLocation, Link } from "react-router"; // Cambia a 'react-router-dom'
-import CanchaImg from "../../assets/canchaPadel.jpg";
 
 function ReservarAdmin() {
     const location = useLocation();
@@ -65,7 +64,7 @@ function ReservarAdmin() {
         <LayoutAdmin>
             <div className="flex flex-col min-h-screen">
                 <img
-                    src={CanchaImg}
+                    src='public/canchaPadel.jpg'
                     alt="Cancha de pádel"
                     className="w-full h-40 object-cover"
                 />

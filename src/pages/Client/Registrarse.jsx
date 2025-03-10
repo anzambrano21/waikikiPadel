@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router"; // Cambia a 'react-router-dom'
 import LayoutRegistrarse from "../../layout/LayoutRegistrarse";
 import logo from '../../assets/logo1.png';
 import defaultUser from '../../assets/defaultUser.jpg';
@@ -10,11 +10,11 @@ function Registrarse() {
     const [selectedCountry, setSelectedCountry] = useState(null);
     const [profileImage, setProfileImage] = useState(null);
     const [errors, setErrors] = useState({});
-
     const [nombre, setNombre] = useState("");
     const [telefono, setTelefono] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const navigate = useNavigate(); // Para redirigir al usuario
 
     const handleImageChange = (event) => {
         const file = event.target.files[0];
@@ -86,18 +86,40 @@ function Registrarse() {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (validateForm()) {
-            console.log("Formulario válido. Datos:", {
-                nombre,
-                telefono,
-                email,
-                password,
-                selectedCountry,
-                profileImage,
-            });
+            const formData = new FormData();
+            formData.append("name", nombre);
+            formData.append("email", email);
+            formData.append("phone", telefono);
+            formData.append("password", password);
+            if (profileImage) {
+                const file = await fetch(profileImage).then((res) => res.blob());
+                formData.append("profileImage", file, "profile.jpg");
+            }
+
+            try {
+                const response = await fetch("http://localhost:3000/api/usuarios", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || "Error al registrar el usuario");
+                }
+
+                const data = await response.json();
+                console.log("Usuario registrado:", data);
+
+                // Redirigir al usuario a la página principal
+                navigate("/principal");
+            } catch (error) {
+                console.error("Error:", error);
+                setErrors({ submit: error.message });
+            }
         } else {
             console.log("Formulario inválido. Corrige los errores.");
         }

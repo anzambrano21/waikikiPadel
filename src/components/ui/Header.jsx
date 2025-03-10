@@ -13,7 +13,6 @@ const Header = () => {
 
     return (
         <>
-
                     <header className="bg-white flex justify-between items-center p-4 shadow-lg z-50">
         
                         <Link to="/" className="flex items-center">
