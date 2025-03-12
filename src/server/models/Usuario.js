@@ -1,18 +1,31 @@
 // backend/models/usuarioModel.js
 import pool from '../config/db.js';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 // Crear un nuevo usuario
 export const createUsuario = async (user) => {
-  const { name, email, phone, password, profileImage, role = 'usuario' } = user;
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const { name, email, phone, password, role = 'usuario' } = user;
 
-  const query = `
-    INSERT INTO usuarios (name, email, phone, password, profileImage, role)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `;
-  const [result] = await pool.query(query, [name, email, phone, hashedPassword, profileImage, role]);
-  return result;
+  try {
+    // Hashear la contraseña
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Query para insertar el usuario en la base de datos
+    const query = `
+      INSERT INTO usuarios (name, email, phone, password, role)
+      VALUES (?, ?, ?, ?, ?)
+    `;
+
+    // Ejecutar la consulta
+    const [result] = await pool.query(query, [name, email, phone, hashedPassword, role]);
+
+    // Retornar el resultado
+    return result;
+  } catch (error) {
+    // Manejar errores
+    console.error('Error al crear el usuario:', error);
+    throw new Error('No se pudo crear el usuario');
+  }
 };
 
 // Buscar un usuario por email

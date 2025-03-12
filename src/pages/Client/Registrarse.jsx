@@ -95,10 +95,7 @@ function Registrarse() {
             formData.append("email", email);
             formData.append("phone", telefono);
             formData.append("password", password);
-            if (profileImage) {
-                const file = await fetch(profileImage).then((res) => res.blob());
-                formData.append("profileImage", file, "profile.jpg");
-            }
+
 
             try {
                 const response = await fetch("http://localhost:3000/api/usuarios", {
