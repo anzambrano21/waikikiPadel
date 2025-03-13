@@ -3,15 +3,14 @@ CREATE DATABASE IF NOT EXISTS waikiki;
 USE waikiki;
 
 CREATE TABLE usuarios (
-  id INT AUTO_INCREMENT PRIMARY KEY,          -- Identificador único del usuario
-  name VARCHAR(255) NOT NULL,                -- Nombre del usuario
-  email VARCHAR(255) NOT NULL UNIQUE,        -- Correo electrónico (único)
-  phone VARCHAR(15) NOT NULL,                -- Número de teléfono
-  password VARCHAR(255) NOT NULL,            -- Contraseña cifrada
-  profileImage VARCHAR(255),                 -- Ruta de la imagen de perfil (opcional)
-  role ENUM('admin', 'usuario') NOT NULL DEFAULT 'usuario',  -- Rol del usuario
-  isBlocked BOOLEAN NOT NULL DEFAULT FALSE,  -- Estado de bloqueo del usuario
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha de creación del usuario
+    id INT AUTO_INCREMENT PRIMARY KEY,       -- Identificador único del usuario
+    nombre VARCHAR(255) NOT NULL,           -- Nombre del usuario
+    email VARCHAR(255) NOT NULL UNIQUE,     -- Correo electrónico (único)
+    telefono VARCHAR(15),                   -- Número de teléfono
+    contraseña VARCHAR(255) NOT NULL,       -- Contraseña hasheada
+    codigoPais VARCHAR(10),                 -- Código del país
+    role ENUM('usuario', 'admin')            
+    isBlocked BOOLEAN DEFAULT FALSE        -- Estado de bloqueo
 );
 
 -- Tabla de Canchas
@@ -56,8 +55,5 @@ CREATE TABLE IF NOT EXISTS pagos (
     FOREIGN KEY (reserva_id) REFERENCES reservaciones(id)
 );
 
-
-INSERT INTO canchas (name, image, price_per_hour)
-VALUES 
-('Cancha 1', 'public/canchaPadel.jpg', 20.00),
-('Cancha 5', 'https://padelmaster.com.ve/wp-content/uploads/2023/09/elite-usa.jpg', 15.00);
+ALTER TABLE usuarios
+ADD COLUMN role ENUM('usuario', 'admin') DEFAULT 'usuario';

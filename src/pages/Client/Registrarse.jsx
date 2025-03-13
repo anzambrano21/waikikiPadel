@@ -13,7 +13,7 @@ function Registrarse() {
     const [nombre, setNombre] = useState("");
     const [telefono, setTelefono] = useState("");
     const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [contraseña, setcontraseña] = useState("");
     const navigate = useNavigate(); // Para redirigir al usuario
 
     const handleImageChange = (event) => {
@@ -72,10 +72,10 @@ function Registrarse() {
             newErrors.email = "El correo electrónico no es válido.";
         }
 
-        if (!password.trim()) {
-            newErrors.password = "La contraseña es obligatoria.";
-        } else if (password.trim().length < 6) {
-            newErrors.password = "La contraseña debe tener al menos 6 caracteres.";
+        if (!contraseña.trim()) {
+            newErrors.contraseña = "La contraseña es obligatoria.";
+        } else if (contraseña.trim().length < 6) {
+            newErrors.contraseña = "La contraseña debe tener al menos 6 caracteres.";
         }
 
         if (!selectedCountry) {
@@ -88,39 +88,45 @@ function Registrarse() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+      
         if (validateForm()) {
-            const formData = new FormData();
-            formData.append("name", nombre);
-            formData.append("email", email);
-            formData.append("phone", telefono);
-            formData.append("password", password);
-
-
-            try {
-                const response = await fetch("http://localhost:3000/api/usuarios", {
-                    method: "POST",
-                    body: formData,
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || "Error al registrar el usuario");
-                }
-
-                const data = await response.json();
-                console.log("Usuario registrado:", data);
-
-                // Redirigir al usuario a la página principal
-                navigate("/principal");
-            } catch (error) {
-                console.error("Error:", error);
-                setErrors({ submit: error.message });
+          const data = {
+            nombre,
+            email,
+            telefono,
+            contraseña,
+            codigoPais: selectedCountry.value, // Enviar el código del país
+          };
+      
+          console.log(data); // Verifica que los datos sean correctos
+      
+          try {
+            const response = await fetch("http://localhost:3000/api/usuarios", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json", // Especifica el tipo de contenido
+              },
+              body: JSON.stringify(data), // Convierte el objeto a JSON
+            });
+      
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.error || "Error al registrar el usuario");
             }
+      
+            const result = await response.json();
+            console.log("Usuario registrado:", result);
+      
+            // Redirigir al usuario a la página principal
+            navigate("/principal");
+          } catch (error) {
+            console.error("Error:", error);
+            setErrors({ submit: error.message });
+          }
         } else {
-            console.log("Formulario inválido. Corrige los errores.");
+          console.log("Formulario inválido. Corrige los errores.");
         }
-    };
+      };
 
     return (
         <LayoutRegistrarse>
@@ -219,10 +225,10 @@ function Registrarse() {
                         <input
                             type="password"
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            value={contraseña}
+                            onChange={(e) => setcontraseña(e.target.value)}
                         />
-                        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+                        {errors.contraseña && <p className="text-red-500 text-sm mt-1">{errors.contraseña}</p>}
                     </div>
 
                     <Link to="/iniciarsesion">

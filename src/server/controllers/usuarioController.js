@@ -1,66 +1,69 @@
-// backend/controllers/usuarioController.js
 import { createUsuario, findByEmail, getUsuarios, deleteUsuario, toggleBlockUsuario } from '../models/Usuario.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-// Registrar un nuevo usuario
 export const crearUsuario = async (req, res) => {
-    const { name, email, phone, password } = req.body;
-  
-    try {
-      const result = await createUsuario({ name, email, phone, password });
-      res.status(201).json({ message: 'Usuario registrado exitosamente', result });
-    } catch (error) {
-      res.status(400).json({ error: error.message }); // Devuelve un error en formato JSON
-    }
-  };
+  const { nombre, email, telefono, contraseña, codigoPais, role = 'usuario' } = req.body;
 
-// Login de usuario
+  console.log(req.body); // Verifica que los datos lleguen correctamente
+
+  if (!contraseña) {
+    return res.status(400).json({ error: "La contraseña es obligatoria" });
+  }
+
+  try {
+    const result = await createUsuario({ nombre, email, telefono, contraseña, codigoPais, role });
+    res.status(201).json({ message: 'Usuario registrado exitosamente', result });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 export const login = async (req, res) => {
-    const { email, password } = req.body;
-  
-    try {
-      // Buscar el usuario por email
-      const user = await findByEmail(email);
-      if (!user) {
-        return res.status(400).json({ error: 'Usuario no encontrado' });
-      }
-  
-      // Verificar si el usuario está bloqueado
-      if (user.isBlocked) {
-        return res.status(400).json({ error: 'Usuario bloqueado' });
-      }
-  
-      // Comparar contraseñas usando bcryptjs
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(400).json({ error: 'Contraseña incorrecta' });
-      }
-  
-      // Generar token JWT
-      const token = jwt.sign(
-        { userId: user.id, role: user.role }, // Payload del token
-        'secreto', // Clave secreta (debería estar en una variable de entorno)
-        { expiresIn: '1h' } // Expiración del token
-      );
-  
-      // Respuesta exitosa
-      res.json({
-        message: 'Login exitoso',
-        token,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        },
-      });
-    } catch (error) {
-      // Manejo de errores
-      console.error('Error en el login:', error);
-      res.status(500).json({ error: 'Error en el servidor' });
+  const { email, contraseña } = req.body;
+
+  try {
+    // Buscar el usuario por email
+    const user = await findByEmail(email);
+    if (!user) {
+      return res.status(400).json({ error: 'Usuario no encontrado' });
     }
-  };
+
+    // Verificar si el usuario está bloqueado
+    if (user.isBlocked) {
+      return res.status(400).json({ error: 'Usuario bloqueado' });
+    }
+
+    // Comparar contraseñas usando bcryptjs
+    const isMatch = await bcrypt.compare(contraseña, user.contraseña);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Contraseña incorrecta' });
+    }
+
+    // Generar token JWT
+    const token = jwt.sign(
+      { userId: user.id, role: user.role }, // Payload del token (incluye role)
+      'secreto', // Clave secreta (debería estar en una variable de entorno)
+      { expiresIn: '1h' } // Expiración del token
+    );
+
+    // Respuesta exitosa
+    res.json({
+      message: 'Login exitoso',
+      token,
+      user: {
+        id: user.id,
+        nombre: user.nombre,
+        email: user.email,
+        role: user.role, // Incluye el role en la respuesta
+      },
+    });
+  } catch (error) {
+    // Manejo de errores
+    console.error('Error en el login:', error);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
+};
 
 // Obtener todos los usuarios
 export const obtenerUsuarios = async (req, res) => {

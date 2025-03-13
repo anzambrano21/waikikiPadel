@@ -1,28 +1,37 @@
-// backend/models/usuarioModel.js
 import pool from '../config/db.js';
 import bcrypt from 'bcryptjs';
 
-// Crear un nuevo usuario
 export const createUsuario = async (user) => {
-  const { name, email, phone, password, role = 'usuario' } = user;
+  const { nombre, email, telefono, contraseña, codigoPais, role = 'usuario' } = user;
+
+  if (!contraseña) {
+    throw new Error("La contraseña es obligatoria");
+  }
 
   try {
     // Hashear la contraseña
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(contraseña, 10);
 
     // Query para insertar el usuario en la base de datos
     const query = `
-      INSERT INTO usuarios (name, email, phone, password, role)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO usuarios (nombre, email, telefono, contraseña, codigoPais, role, isBlocked)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
 
     // Ejecutar la consulta
-    const [result] = await pool.query(query, [name, email, phone, hashedPassword, role]);
+    const [result] = await pool.query(query, [
+      nombre,
+      email,
+      telefono,
+      hashedPassword,
+      codigoPais,
+      role,
+      false, // isBlocked por defecto es false
+    ]);
 
     // Retornar el resultado
     return result;
   } catch (error) {
-    // Manejar errores
     console.error('Error al crear el usuario:', error);
     throw new Error('No se pudo crear el usuario');
   }
