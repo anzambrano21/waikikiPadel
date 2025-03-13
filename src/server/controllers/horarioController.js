@@ -5,7 +5,7 @@ import {
     updateHorarioEstado,
     deleteHorario,
 } from "../models/Horario.js";
-
+import pool from '../config/db.js';
 
 // Obtener horarios disponibles para una cancha en una fecha específica
 export const obtenerHorariosDisponibles = async (req, res) => {

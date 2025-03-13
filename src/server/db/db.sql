@@ -55,5 +55,67 @@ CREATE TABLE IF NOT EXISTS pagos (
     FOREIGN KEY (reserva_id) REFERENCES reservaciones(id)
 );
 
-ALTER TABLE usuarios
-ADD COLUMN role ENUM('usuario', 'admin') DEFAULT 'usuario';
+-- Eliminar la restricción de clave externa en horarios
+ALTER TABLE horarios DROP FOREIGN KEY horarios_ibfk_1;
+
+-- Truncar la tabla canchas
+TRUNCATE TABLE canchas;
+
+-- Volver a agregar la restricción de clave externa
+ALTER TABLE horarios ADD CONSTRAINT horarios_ibfk_1 FOREIGN KEY (cancha_id) REFERENCES canchas(id);
+
+-- Insertar un solo registro
+INSERT INTO canchas (name, image, price_per_hour)
+VALUES ('Cancha 1', '../public/cancha1.webp', 10.00);
+
+-- Insertar un solo registro
+INSERT INTO canchas (name, image, price_per_hour)
+VALUES ('Cancha 2', '../public/cancha2.webp', 10.00);
+
+-- Insertar un solo registro
+INSERT INTO canchas (name, image, price_per_hour)
+VALUES ('Cancha 3', '../public/cancha3.webp', 10.00);
+
+-- Insertar un solo registro
+INSERT INTO canchas (name, image, price_per_hour)
+VALUES ('Cancha 4', '../public/cancha4.webp', 10.00);
+
+-- Insertar un solo registro
+INSERT INTO canchas (name, image, price_per_hour)
+VALUES ('Cancha 5', '../public/cancha5.webp', 10.00);
+
+-- Insertar un solo registro
+INSERT INTO canchas (name, image, price_per_hour)
+VALUES ('Cancha 6', '../public/cancha6.webp', 10.00);
+
+-- Insertar un solo registro
+INSERT INTO canchas (name, image, price_per_hour)
+VALUES ('Cancha 7', '../public/cancha7.webp', 10.00);
+
+-- Insertar un solo registro
+INSERT INTO canchas (name, image, price_per_hour)
+VALUES ('Cancha Central', '../public/ccentral.webp', 12.00);
+
+-- Insertar un solo registro
+INSERT INTO canchas (name, image, price_per_hour)
+VALUES ('Estadio 1', '../public/estadio1.webp', 20.00);
+
+-- Insertar un solo registro
+INSERT INTO canchas (name, image, price_per_hour)
+VALUES ('Estadio 2', '../public/estadio2.webp', 20.00);
+
+-- Insertar un solo registro
+INSERT INTO canchas (name, image, price_per_hour)
+VALUES ('Individual', '../public/individual1.webp', 10.00);
+
+-- Insertar un solo registro
+INSERT INTO canchas (name, image, price_per_hour)
+VALUES ('Pickeball 1', '../public/pickeball1.webp', 10.00);
+
+-- Insertar un solo registro
+INSERT INTO canchas (name, image, price_per_hour)
+VALUES ('Pickeball 2', '../public/pickeball2.webp', 10.00);
+
+-- Insertar un solo registro
+INSERT INTO canchas (name, image, price_per_hour)
+VALUES ('Pickeball 3', '../public/pickeball3.webp', 10.00);
