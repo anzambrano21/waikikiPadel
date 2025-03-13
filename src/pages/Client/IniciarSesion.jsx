@@ -7,13 +7,10 @@ function IniciarSesion() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState({});
-    const navigate = useNavigate()
-
+    const navigate = useNavigate();
 
     const validateForm = () => {
         const newErrors = {};
-
-        navigate("/principal")
 
         // Validación de email
         if (!email) {
@@ -33,11 +30,40 @@ function IniciarSesion() {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+
         if (validateForm()) {
-            // Aquí puedes manejar el envío del formulario, por ejemplo, hacer una petición HTTP
-            console.log("Formulario válido, enviando datos...");
+            try {
+                // Enviar los datos al backend
+                const response = await fetch("http://localhost:3000/api/usuarios/login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ email, contraseña: password }), // Enviar email y contraseña
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || "Error al iniciar sesión");
+                }
+
+                const data = await response.json();
+
+                // Guardar el token en el localStorage
+                localStorage.setItem("token", data.token);
+
+                // Redirigir al usuario a la página principal
+                navigate("/principal");
+
+                console.log("Inicio de sesión exitoso:", data);
+            } catch (error) {
+                console.error("Error:", error);
+                setErrors({ submit: error.message });
+            }
+        } else {
+            console.log("Formulario inválido. Corrige los errores.");
         }
     };
 
@@ -99,6 +125,8 @@ function IniciarSesion() {
                         Iniciar Sesión
                     </button>
 
+                    {/* Mostrar errores de inicio de sesión */}
+                    {errors.submit && <p className="text-red-500 text-xs mt-2">{errors.submit}</p>}
                 </form>
             </div>
         </LayoutRegistrarse>
