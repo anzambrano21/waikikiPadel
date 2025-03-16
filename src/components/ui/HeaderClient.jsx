@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router'; 
+import { Link } from 'react-router'; // Cambia a 'react-router-dom'
 import logo from '../../assets/logo1.png';
 import SidebarClient from './SidebarClient';
 
@@ -12,10 +12,9 @@ const HeaderClient = () => {
 
     return (
         <>
-            <header className="bg-white flex justify-between items-center p-4 shadow-lg z-50">
-
+            <header className="bg-white w-full flex justify-between items-center p-4 shadow-lg z-50">
                 <Link to="/principal" className="flex items-center">
-                    <img src={logo} alt="logo" className="w-30" />
+                    <img src={logo} alt="logo" className="w-30 max-w-full" /> {/* Asegura que la imagen no exceda el ancho */}
                 </Link>
 
                 {/* Menú Hamburguesa */}
@@ -41,14 +40,14 @@ const HeaderClient = () => {
                 </button>
             </header>
 
+            {/* Sidebar */}
             <div
                 className={`fixed inset-y-0 right-0 w-64 bg-[#113872] transform ${
                     isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
-                } transition-transform duration-600 ease-in-out z-40`}
+                } transition-transform duration-600 ease-in-out z-40 overflow-x-hidden`}
             >
                 <SidebarClient />
             </div>
-
 
             {/* Overlay para cerrar el Sidebar */}
             {isSidebarOpen && (

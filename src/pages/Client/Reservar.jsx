@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import LayoutClient from "../../layout/LayoutClient.jsx";
 import CanchaImg from "../../../public/canchaPadel.jpg";
+import { formatTime } from "../../utils/formatTime.jsx";
 
 function Reservar() {
     const location = useLocation();
@@ -9,21 +10,53 @@ function Reservar() {
     const canchaId = searchParams.get("cancha");
     const fechaInicial = searchParams.get("fecha");
 
-    const [fechaSeleccionada, setFechaSeleccionada] = useState(fechaInicial || new Date().toISOString().split("T")[0]);
+    const [cancha, setCancha] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const getFechaActualVenezuela = () => {
+        const ahora = new Date();
+        const offsetVenezuela = -4 * 60;
+        const fechaLocal = new Date(ahora.getTime() + offsetVenezuela * 60 * 1000);
+        return fechaLocal.toISOString().split("T")[0];
+    };
+
+    const [fechaSeleccionada, setFechaSeleccionada] = useState(fechaInicial || getFechaActualVenezuela());
     const [horasSeleccionadas, setHorasSeleccionadas] = useState([]);
     const [errorFecha, setErrorFecha] = useState("");
 
-    const fechaActual = new Date().toISOString().split("T")[0];
+    const fechaActual = getFechaActualVenezuela();
 
-    // Datos de ejemplo (reemplaza esto con una llamada a tu API)
-    const horariosDisponibles = [
-        { id: 1, cancha_id: 1, dia: "2023-10-01", horaInicio: "10:00 AM", horaFin: "11:00 AM", estado: "disponible" },
-        { id: 2, cancha_id: 1, dia: "2023-10-01", horaInicio: "11:00 AM", horaFin: "12:00 PM", estado: "disponible" },
-        { id: 3, cancha_id: 1, dia: "2023-10-01", horaInicio: "12:00 PM", horaFin: "1:00 PM", estado: "disponible" },
-        { id: 4, cancha_id: 1, dia: "2023-10-01", horaInicio: "1:00 PM", horaFin: "2:00 PM", estado: "disponible" },
-    ];
+    useEffect(() => {
+        const fetchCanchaYHorarios = async () => {
+            try {
+                const responseCancha = await fetch(`http://localhost:3000/api/canchas/${canchaId}`);
+                if (!responseCancha.ok) {
+                    throw new Error("Error al obtener la cancha");
+                }
+                const dataCancha = await responseCancha.json();
 
-    // Validar la fecha seleccionada
+                const responseHorarios = await fetch(
+                    `http://localhost:3000/api/horarios/disponibles?cancha_id=${canchaId}&fecha=${fechaSeleccionada}`
+                );
+                if (!responseHorarios.ok) {
+                    throw new Error("Error al obtener los horarios");
+                }
+                const dataHorarios = await responseHorarios.json();
+
+                const canchaConHorarios = { ...dataCancha, horarios: dataHorarios };
+
+                setCancha(canchaConHorarios);
+            } catch (error) {
+                setError(error.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCanchaYHorarios();
+    }, [canchaId, fechaSeleccionada]);
+
     const validarFecha = (fecha) => {
         if (fecha < fechaActual) {
             setErrorFecha("No se pueden seleccionar fechas anteriores al día actual.");
@@ -34,7 +67,6 @@ function Reservar() {
         }
     };
 
-    // Actualiza el estado cuando cambia la fecha de la URL
     useEffect(() => {
         if (fechaInicial) {
             setFechaSeleccionada(fechaInicial);
@@ -42,32 +74,30 @@ function Reservar() {
         }
     }, [fechaInicial]);
 
-    // Manejar el cambio de fecha
     const handleFechaChange = (e) => {
         const nuevaFecha = e.target.value;
         setFechaSeleccionada(nuevaFecha);
         validarFecha(nuevaFecha);
     };
 
-    // Manejar el clic en una hora
-    const handleHoraClick = (horario) => {
+    const handleHoraClick = (start_time) => {
         if (fechaSeleccionada < fechaActual) {
             setErrorFecha("No se pueden seleccionar horas para fechas pasadas.");
             return;
         }
 
-        if (horasSeleccionadas.includes(horario.id)) {
-            setHorasSeleccionadas(horasSeleccionadas.filter(id => id !== horario.id));
+        if (horasSeleccionadas.includes(start_time)) {
+            // Si ya está seleccionada, la quitamos
+            setHorasSeleccionadas(horasSeleccionadas.filter((hora) => hora !== start_time));
         } else {
-            setHorasSeleccionadas([...horasSeleccionadas, horario.id]);
+            // Si no está seleccionada, la agregamos
+            setHorasSeleccionadas([...horasSeleccionadas, start_time]);
         }
     };
 
-    // Calcular el monto total
-    const precioPorHora = 10; // Precio por hora (puedes cambiarlo según tus necesidades)
+    const precioPorHora = 10;
     const montoTotal = horasSeleccionadas.length * precioPorHora;
 
-    // Navegar a MetodosPago con los IDs de los horarios seleccionados y el monto total
     const navigate = useNavigate();
     const handleReservarClick = () => {
         if (horasSeleccionadas.length === 0) {
@@ -75,9 +105,16 @@ function Reservar() {
             return;
         }
 
-        // Navegar a MetodosPago con los IDs de los horarios seleccionados y el monto total
         navigate(`/metodospago?cancha=${canchaId}&fecha=${fechaSeleccionada}&horarios=${horasSeleccionadas.join(",")}&montoTotal=${montoTotal}`);
     };
+
+    if (loading) {
+        return <div>Cargando...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
 
     return (
         <LayoutClient>
@@ -92,7 +129,7 @@ function Reservar() {
                     <div className="flex justify-between items-center">
                         <h1 className="text-2xl md:text-4xl font-bold text-blue-950">Reservar:</h1>
                         <h2 className="text-2xl md:text-3xl font-bold mr-4 text-green-600">
-                            Cancha {canchaId}
+                            {cancha?.name || "Cargando..."}
                         </h2>
                     </div>
 
@@ -119,18 +156,18 @@ function Reservar() {
                         <h2 className="text-xl font-bold my-2 text-blue-950">Horas disponibles</h2>
 
                         <ul className="flex justify-center flex-wrap">
-                            {horariosDisponibles.map((horario) => (
-                                <li key={horario.id}>
+                            {cancha?.horarios?.map((horario) => (
+                                <li key={horario.start_time}>
                                     <div
                                         id="horario"
                                         className={`flex justify-center items-center border w-25 mr-2 mb-2 p-2 shadow-2xl rounded cursor-pointer ${
-                                            horasSeleccionadas.includes(horario.id)
+                                            horasSeleccionadas.includes(horario.start_time)
                                                 ? "bg-[#113872] text-white"
                                                 : "hover:bg-[#113872] hover:text-white"
                                         } duration-300 ease-in`}
-                                        onClick={() => handleHoraClick(horario)}
+                                        onClick={() => handleHoraClick(horario.start_time)}
                                     >
-                                        <p>{horario.horaInicio}</p>
+                                        <p>{formatTime(horario.start_time)}</p>
                                     </div>
                                 </li>
                             ))}

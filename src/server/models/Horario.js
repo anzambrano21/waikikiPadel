@@ -7,10 +7,10 @@ export const getHorarios = async () => {
 };
 
 // Crear un nuevo horario
-export const createHorario = async (canchaId, fecha, startTime, endTime, estado = "disponible") => {
+export const createHorario = async (cancha_id, date, start_time, end_time, estado = "disponible") => {
     const [result] = await pool.query(
-        "INSERT INTO horarios (cancha_id, fecha, hora_inicio, hora_fin, estado) VALUES (?, ?, ?, ?, ?)",
-        [canchaId, fecha, startTime, endTime, estado]
+        "INSERT INTO horarios (cancha_id, date, start_time, end_time, estado) VALUES (?, ?, ?, ?, ?)",
+        [cancha_id, date, start_time, end_time, estado]
     );
     return result.insertId;
 };

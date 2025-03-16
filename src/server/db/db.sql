@@ -119,3 +119,5 @@ VALUES ('Pickeball 2', '../public/pickeball2.webp', 10.00);
 -- Insertar un solo registro
 INSERT INTO canchas (name, image, price_per_hour)
 VALUES ('Pickeball 3', '../public/pickeball3.webp', 10.00);
+
+ALTER TABLE horarios CHANGE COLUMN day_week date DATE NOT NULL;

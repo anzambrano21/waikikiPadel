@@ -1,7 +1,8 @@
-import React, { useState} from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import LayoutClient from "../../layout/LayoutClient.jsx";
 import { MetodoPago } from "../../components/MetodoPago.jsx";
+import { formatTime } from "../../utils/formatTime.jsx";
 
 function MetodosPago() {
     const location = useLocation();
@@ -11,18 +12,24 @@ function MetodosPago() {
     const horariosIds = searchParams.get("horarios").split(",");
     const montoTotal = searchParams.get("montoTotal");
 
-    // Datos de ejemplo (reemplaza esto con una llamada a tu API)
-    const horariosDisponibles = [
-        { id: 1, cancha_id: 1, dia: "2023-10-01", horaInicio: "10:00 AM", horaFin: "11:00 AM", estado: "disponible" },
-        { id: 2, cancha_id: 1, dia: "2023-10-01", horaInicio: "11:00 AM", horaFin: "12:00 PM", estado: "disponible" },
-        { id: 3, cancha_id: 1, dia: "2023-10-01", horaInicio: "12:00 PM", horaFin: "1:00 PM", estado: "disponible" },
-        { id: 4, cancha_id: 1, dia: "2023-10-01", horaInicio: "1:00 PM", horaFin: "2:00 PM", estado: "disponible" },
-    ];
+    // Función para sumar una hora a una hora dada
+    const sumarUnaHora = (hora) => {
+        const [h, m, s] = hora.split(":"); // Separar horas, minutos y segundos
+        const fecha = new Date();
+        fecha.setHours(parseInt(h, 10) + 1); // Sumar una hora
+        fecha.setMinutes(parseInt(m, 10));
+        fecha.setSeconds(parseInt(s, 10));
+        return fecha.toTimeString().split(" ")[0]; // Devolver en formato HH:MM:SS
+    };
 
-    // Filtrar los horarios seleccionados
-    const horariosSeleccionados = horariosDisponibles.filter(horario =>
-        horariosIds.includes(horario.id.toString())
-    );
+    // Crear un array de objetos con las horas de inicio y fin
+    const horariosFormateados = horariosIds.map((horaInicio) => {
+        const horaFin = sumarUnaHora(horaInicio); // Sumar una hora a la hora de inicio
+        return {
+            horaInicio: formatTime(horaInicio), // Formatear la hora de inicio
+            horaFin: formatTime(horaFin),       // Formatear la hora de fin
+        };
+    });
 
     const [metodoSeleccionado, setMetodoSeleccionado] = useState(null);
     const [imagenPagoMovil, setImagenPagoMovil] = useState(null);
@@ -67,12 +74,12 @@ function MetodosPago() {
         }
     };
 
-    const handleReservar = () => {
+    const handleReservar = async () => {
         if (!metodoSeleccionado) {
             setError("Debes seleccionar un método de pago para reservar.");
             return;
         }
-
+    
         if (
             (metodoSeleccionado === "Pago Móvil" && !imagenPagoMovil) ||
             (metodoSeleccionado === "Zelle" && !imagenZelle)
@@ -80,16 +87,48 @@ function MetodosPago() {
             setError("Debes subir un comprobante de pago para reservar.");
             return;
         }
-
+    
         setError("");
-        console.log("Reserva exitosa");
-        navigate("/principal");
+    
+        try {
+            // Crear un array de horarios con las horas de inicio y fin
+            const horarios = horariosIds.map((horaInicio) => ({
+                start_time: horaInicio,
+                end_time: sumarUnaHora(horaInicio),
+            }));
+    
+            // Enviar la solicitud al backend
+            const reservaResponse = await fetch('http://localhost:3000/api/reservas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: 1, // ID del usuario (debes obtenerlo de tu sistema de autenticación)
+                    cancha_id: canchaId, // ID de la cancha
+                    fecha: fecha, // Fecha de la reserva
+                    horarios: horarios, // Array de horarios
+                }),
+            });
+    
+            const reservaData = await reservaResponse.json();
+    
+            if (!reservaResponse.ok) {
+                throw new Error(reservaData.message || "Error al crear la reserva");
+            }
+    
+            console.log("Reserva exitosa");
+            navigate("/principal"); // Redirigir al usuario a la página principal
+        } catch (error) {
+            console.error("Error al realizar la reserva:", error);
+            setError("Error al realizar la reserva. Por favor, intenta de nuevo.");
+        }
     };
 
     return (
         <LayoutClient>
-            <div className="flex justify-center min-h-screen p-2">
-                <div className="flex flex-col items-center w-full max-w-md">
+            <div className="flex justify-center p-2 ">
+                <div className="flex flex-col items-center w-full max-w-md h-120">
                     <div className="border border-gray-500 rounded-xl w-full shadow-lg">
                         <div className="p-2">
                             <h1 className="text-2xl font-bold text-blue-950">Reservar</h1>
@@ -101,8 +140,8 @@ function MetodosPago() {
                         </div>
 
                         {/* Mostrar los rangos de horas seleccionadas */}
-                        {horariosSeleccionados.map((horario) => (
-                            <div key={horario.id} className="flex justify-center items-center my-4 font-bold">
+                        {horariosFormateados.map((horario, index) => (
+                            <div key={index} className="flex justify-center items-center my-4 font-bold">
                                 <p className="m-2">Desde:</p>
                                 <p className="m-2 font-semibold text-white p-2 rounded-xl text-center w-25 bg-blue-950">{horario.horaInicio}</p>
                                 <p className="m-2">Hasta:</p>
@@ -112,7 +151,7 @@ function MetodosPago() {
 
                         <div className="flex flex-col font-bold text-blue-950">
                             <h3 className="text-xl font-bold mb-2 p-2">Métodos de Pago</h3>
-                            <ul className="overflow-y-auto max-h-96">
+                            <ul className="scroll-blue overflow-y-auto " style={{ maxHeight: "400px" }}>
                                 <MetodoPago
                                     nombre="Pago Móvil"
                                     seleccionado={metodoSeleccionado === "Pago Móvil"}
@@ -170,4 +209,4 @@ function MetodosPago() {
     );
 }
 
-export default MetodosPago;
+export default MetodosPago; 

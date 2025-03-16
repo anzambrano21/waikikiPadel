@@ -3,43 +3,56 @@ import { Link } from "react-router"; // Cambia a 'react-router-dom'
 import LayoutClient from "../../layout/LayoutClient.jsx";
 import CardCancha from "../../components/CardCancha.jsx";
 import CardCanchaReservada from "../../components/CardCanchaReservada.jsx";
+import { ClipLoader } from "react-spinners"; // Importar el spinner
 
 function Principal() {
-
     const [canchas, setCanchas] = useState([]); // Estado para las canchas
     const [loading, setLoading] = useState(true); // Estado para manejar la carga
     const [error, setError] = useState(null); // Estado para manejar errores
 
     useEffect(() => {
-        // Función para obtener las canchas desde la API
-        const fetchCanchas = async () => {
+        const fetchCanchasYHorarios = async () => {
             try {
-                const response = await fetch("http://localhost:3000/api/canchas");
-                if (!response.ok) {
+                // Obtener las canchas
+                const responseCanchas = await fetch("http://localhost:3000/api/canchas");
+                if (!responseCanchas.ok) {
                     throw new Error("Error al obtener las canchas");
                 }
-                const data = await response.json();
-                console.log("Datos de la API:", data);
-                setCanchas(data); // Actualiza el estado con los datos obtenidos
+                const dataCanchas = await responseCanchas.json();
+    
+                // Obtener los horarios disponibles para cada cancha
+                const canchasConHorarios = await Promise.all(
+                    dataCanchas.map(async (cancha) => {
+                        const fechaActual = new Date().toISOString().split("T")[0]; // Fecha actual
+                        const responseHorarios = await fetch(
+                            `http://localhost:3000/api/horarios/disponibles?cancha_id=${cancha.id}&fecha=${fechaActual}`
+                        );
+                        if (!responseHorarios.ok) {
+                            throw new Error("Error al obtener los horarios");
+                        }
+                        const dataHorarios = await responseHorarios.json();
+                        console.log("dataHorarios:", dataHorarios); // Depuración
+                        return { ...cancha, horarios: dataHorarios }; // Agregar horarios a la cancha
+                    })
+                );
+    
+                setCanchas(canchasConHorarios); // Actualiza el estado con las canchas y sus horarios
             } catch (error) {
                 setError(error.message); // Maneja el error
             } finally {
                 setLoading(false); // Finaliza la carga
             }
         };
-
-        fetchCanchas(); // Llama a la función para obtener las canchas
-    }, []); // El array vacío asegura que esto solo se ejecute una vez
-
-
+    
+        fetchCanchasYHorarios(); // Llama a la función para obtener los datos
+    }, []);
 
     // Estado de ejemplo para las reservas
-    //const reservas = []; // Si no hay reservas, el array está vacío
-    const reservas = [{ id: 1 }, { id: 2 }]; // Si hay reservas, descomenta esta línea
+    const reservas = [{ id: 1 }, { id: 2 }]; // Si no hay reservas, deja el array vacío
 
     return (
         <LayoutClient>
-            <div className="overflow-x-hidden">
+            <div className="overflow-x-hidden"> {/* Evita el desbordamiento en el eje x */}
                 <div className="mx-4 my-2 flex justify-between items-center py-4">
                     <h1 className="text-2xl md:text-3xl font-bold text-blue-950">Mis Reservaciones</h1>
                 </div>
@@ -60,7 +73,7 @@ function Principal() {
                         </Link>
                     ) : (
                         // Si hay reservas, muestra las tarjetas con scroll horizontal
-                        <div className="flex overflow-x-auto horarios-container mx-4 ">
+                        <div className="flex overflow-x-auto horarios-container mx-4 max-w-full"> {/* Añade max-w-full */}
                             {reservas.map((reserva) => (
                                 <CardCanchaReservada key={reserva.id} />
                             ))}
@@ -72,9 +85,11 @@ function Principal() {
                 <div className="flex flex-col">
                     <h1 className="text-2xl md:text-3xl my-4 mx-4 font-bold text-blue-950">Canchas Disponibles</h1>
 
-                    {/* Mostrar mensaje de carga o error */}
+                    {/* Mostrar spinner o error */}
                     {loading ? (
-                        <p className="text-center">Cargando canchas...</p>
+                        <div className="flex justify-center items-center h-64"> {/* Contenedor para el spinner */}
+                            <ClipLoader color="#1E3A8A" size={50} /> {/* Spinner */}
+                        </div>
                     ) : error ? (
                         <p className="text-center text-red-500">Error: {error}</p>
                     ) : (
@@ -86,13 +101,13 @@ function Principal() {
                                     name={cancha.name}
                                     image={cancha.image}
                                     price_per_hour={cancha.price_per_hour}
+                                    horarios={cancha.horarios} // Pasar los horarios como prop
                                 />
                             ))}
                         </div>
                     )}
                 </div>
             </div>
-
         </LayoutClient>
     );
 }

@@ -5,19 +5,23 @@ import {
     updateHorarioEstado,
     deleteHorario,
 } from "../models/Horario.js";
-import pool from '../config/db.js';
+import pool from "../config/db.js";
 
-// Obtener horarios disponibles para una cancha en una fecha específica
 export const obtenerHorariosDisponibles = async (req, res) => {
-    const { cancha_id, fecha } = req.query; // Parámetros de la solicitud
+    const { cancha_id, fecha } = req.query;
+
+    console.log("cancha_id:", cancha_id); // Depuración
+    console.log("fecha:", fecha); // Depuración
 
     try {
         // Obtener los horarios ocupados para la cancha y fecha específicas
         const [horariosOcupados] = await pool.query(
-            `SELECT hora_inicio, hora_fin FROM horarios 
-             WHERE cancha_id = ? AND fecha = ? AND estado = 'ocupado'`,
+            `SELECT start_time, end_time FROM horarios 
+             WHERE cancha_id = ? AND date = ? AND estado = 'ocupado'`,
             [cancha_id, fecha]
         );
+
+        console.log("horariosOcupados:", horariosOcupados); // Depuración
 
         // Generar horarios disponibles (de 8:00 AM a 10:00 PM, bloques de 1 hora)
         const horariosDisponibles = [];
@@ -31,24 +35,26 @@ export const obtenerHorariosDisponibles = async (req, res) => {
             // Verificar si el horario está ocupado
             const estaOcupado = horariosOcupados.some(
                 (horarioOcupado) =>
-                    horarioOcupado.hora_inicio === horaInicioHorario &&
-                    horarioOcupado.hora_fin === horaFinHorario
+                    horarioOcupado.start_time === horaInicioHorario &&
+                    horarioOcupado.end_time === horaFinHorario
             );
 
             if (!estaOcupado) {
                 horariosDisponibles.push({
-                    hora_inicio: horaInicioHorario,
-                    hora_fin: horaFinHorario,
+                    start_time: horaInicioHorario,
+                    end_time: horaFinHorario,
                 });
             }
         }
 
+        console.log("horariosDisponibles:", horariosDisponibles); // Depuración
+
         res.json(horariosDisponibles);
     } catch (error) {
+        console.error("Error en obtenerHorariosDisponibles:", error); // Depuración
         res.status(500).json({ message: "Error al obtener los horarios", error });
     }
 };
-
 
 // Obtener todos los horarios
 export const obtenerHorarios = async (req, res) => {
@@ -63,9 +69,10 @@ export const obtenerHorarios = async (req, res) => {
 // Crear un nuevo horario
 export const crearHorario = async (req, res) => {
     try {
-        const { canchaId, dayWeek, startTime, endTime, estado } = req.body;
-        const id = await createHorario(canchaId, dayWeek, startTime, endTime, estado);
-        res.status(201).json({ id, canchaId, dayWeek, startTime, endTime, estado });
+        const { cancha_id, date, start_time, end_time, estado = "disponible" } = req.body;
+
+        const id = await createHorario(cancha_id, date, start_time, end_time, estado);
+        res.status(201).json({ id, cancha_id, date, start_time, end_time, estado });
     } catch (error) {
         res.status(500).json({ message: "Error al crear el horario", error });
     }

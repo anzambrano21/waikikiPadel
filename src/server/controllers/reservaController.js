@@ -6,39 +6,52 @@ import {
 } from "../models/Reserva.js";
 import pool from "../config/db.js";
 
-// Crear una reserva
 export const crearReserva = async (req, res) => {
-    const { user_id, cancha_id, fecha, hora_inicio, hora_fin } = req.body;
+    const { user_id, cancha_id, fecha, horarios } = req.body; // Recibe los horarios como un array
 
+    const connection = await pool.getConnection();
     try {
-        // Verificar si el horario ya está ocupado
-        const [horarioExistente] = await pool.query(
-            `SELECT id FROM horarios 
-             WHERE cancha_id = ? AND fecha = ? AND hora_inicio = ? AND hora_fin = ?`,
-            [cancha_id, fecha, hora_inicio, hora_fin]
-        );
+        await connection.beginTransaction(); // Iniciar una transacción
 
-        if (horarioExistente.length > 0) {
-            return res.status(400).json({ message: "El horario ya está ocupado" });
+        // Crear un horario y una reserva para cada horario seleccionado
+        for (const horario of horarios) {
+            const { start_time, end_time } = horario;
+
+            // Verificar si el horario ya está ocupado
+            const [horarioExistente] = await connection.query(
+                `SELECT id FROM horarios 
+                 WHERE cancha_id = ? AND date = ? AND start_time = ? AND end_time = ?`,
+                [cancha_id, fecha, start_time, end_time]
+            );
+
+            if (horarioExistente.length > 0) {
+                await connection.rollback(); // Revertir la transacción si el horario ya está ocupado
+                return res.status(400).json({ message: "El horario ya está ocupado" });
+            }
+
+            // Crear el horario
+            const [result] = await connection.query(
+                `INSERT INTO horarios (cancha_id, date, start_time, end_time, estado) 
+                 VALUES (?, ?, ?, ?, 'ocupado')`,
+                [cancha_id, fecha, start_time, end_time]
+            );
+
+            // Crear la reserva
+            await connection.query(
+                `INSERT INTO reservaciones (user_id, horario_id, status) 
+                 VALUES (?, ?, 'pendiente')`,
+                [user_id, result.insertId]
+            );
         }
 
-        // Crear el horario con estado 'ocupado'
-        const [result] = await pool.query(
-            `INSERT INTO horarios (cancha_id, fecha, hora_inicio, hora_fin, estado) 
-             VALUES (?, ?, ?, ?, 'ocupado')`,
-            [cancha_id, fecha, hora_inicio, hora_fin]
-        );
-
-        // Crear la reserva
-        const [reserva] = await pool.query(
-            `INSERT INTO reservaciones (user_id, horario_id, status) 
-             VALUES (?, ?, 'pendiente')`,
-            [user_id, result.insertId]
-        );
-
-        res.status(201).json({ id: reserva.insertId });
+        await connection.commit(); // Confirmar la transacción
+        res.status(201).json({ message: "Reserva creada exitosamente" });
     } catch (error) {
+        await connection.rollback(); // Revertir la transacción en caso de error
+        console.error("Error en crearReserva:", error);
         res.status(500).json({ message: "Error al crear la reserva", error });
+    } finally {
+        connection.release(); // Liberar la conexión
     }
 };
 
