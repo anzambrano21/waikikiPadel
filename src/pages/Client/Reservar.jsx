@@ -3,12 +3,14 @@ import { useLocation, useNavigate } from "react-router";
 import LayoutClient from "../../layout/LayoutClient.jsx";
 import CanchaImg from "../../../public/canchaPadel.jpg";
 import { formatTime } from "../../utils/formatTime.jsx";
+import { ClipLoader } from "react-spinners"; // Importar el spinner
 
 function Reservar() {
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
     const canchaId = searchParams.get("cancha");
     const fechaInicial = searchParams.get("fecha");
+    const horaInicial = searchParams.get("hora"); // Obtener la hora desde la URL
 
     const [cancha, setCancha] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -22,7 +24,7 @@ function Reservar() {
     };
 
     const [fechaSeleccionada, setFechaSeleccionada] = useState(fechaInicial || getFechaActualVenezuela());
-    const [horasSeleccionadas, setHorasSeleccionadas] = useState([]);
+    const [horasSeleccionadas, setHorasSeleccionadas] = useState(horaInicial ? [horaInicial] : []); // Inicializar horas con la hora de la URL
     const [errorFecha, setErrorFecha] = useState("");
 
     const fechaActual = getFechaActualVenezuela();
@@ -95,7 +97,7 @@ function Reservar() {
         }
     };
 
-    const precioPorHora = 10;
+    const precioPorHora = cancha?.price_per_hour || 0;
     const montoTotal = horasSeleccionadas.length * precioPorHora;
 
     const navigate = useNavigate();
@@ -109,7 +111,12 @@ function Reservar() {
     };
 
     if (loading) {
-        return <div>Cargando...</div>;
+        return <LayoutClient>
+            <div className="flex h-screen items-center justify-center">
+                <ClipLoader color="#1E3A8A" size={50} />
+            </div>
+
+        </LayoutClient>;
     }
 
     if (error) {
@@ -120,12 +127,12 @@ function Reservar() {
         <LayoutClient>
             <div className="flex flex-col min-h-screen">
                 <img
-                    src={CanchaImg}
+                    src={cancha?.image}
                     alt="Cancha de pádel"
                     className="w-full h-40 object-cover"
                 />
 
-                <div id="infoCont" className="p-4 flex-grow overflow-y-auto">
+                <div id="infoCont" className="p-4 flex-grow overflow-y-auto h-130">
                     <div className="flex justify-between items-center">
                         <h1 className="text-2xl md:text-4xl font-bold text-blue-950">Reservar:</h1>
                         <h2 className="text-2xl md:text-3xl font-bold mr-4 text-green-600">
@@ -160,11 +167,10 @@ function Reservar() {
                                 <li key={horario.start_time}>
                                     <div
                                         id="horario"
-                                        className={`flex justify-center items-center border w-25 mr-2 mb-2 p-2 shadow-2xl rounded cursor-pointer ${
-                                            horasSeleccionadas.includes(horario.start_time)
-                                                ? "bg-[#113872] text-white"
-                                                : "hover:bg-[#113872] hover:text-white"
-                                        } duration-300 ease-in`}
+                                        className={`flex justify-center items-center border w-25 mr-2 mb-2 p-2 shadow-2xl rounded cursor-pointer ${horasSeleccionadas.includes(horario.start_time)
+                                            ? "bg-[#113872] text-white"
+                                            : "hover:bg-[#113872] hover:text-white"
+                                            } duration-300 ease-in`}
                                         onClick={() => handleHoraClick(horario.start_time)}
                                     >
                                         <p>{formatTime(horario.start_time)}</p>

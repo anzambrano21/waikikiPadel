@@ -5,7 +5,7 @@ import { formatTime } from "../utils/formatTime"; // Importar la función utilit
 function Horario({ canchaId, horario, fecha }) {
     const formattedTime = formatTime(horario); // Formatear la hora
     return (
-        <Link to={`/reservar?cancha=${canchaId}&hora=${formattedTime}&fecha=${fecha}`}>
+        <Link to={`/reservar?cancha=${canchaId}&hora=${horario}&fecha=${fecha}`}>
             <div
                 id="horario"
                 className="flex justify-center items-center border w-20 mr-2 p-2 shadow rounded hover:bg-[#113872] hover:text-white duration-300 ease-in"

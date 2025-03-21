@@ -2,48 +2,49 @@
 CREATE DATABASE IF NOT EXISTS waikiki;
 USE waikiki;
 
+-- Tabla de Usuarios
 CREATE TABLE usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,       -- Identificador único del usuario
-    nombre VARCHAR(255) NOT NULL,           -- Nombre del usuario
-    email VARCHAR(255) NOT NULL UNIQUE,     -- Correo electrónico (único)
-    telefono VARCHAR(15),                   -- Número de teléfono
-    contraseña VARCHAR(255) NOT NULL,       -- Contraseña hasheada
-    codigoPais VARCHAR(10),                 -- Código del país
-    role ENUM('usuario', 'admin')            
-    isBlocked BOOLEAN DEFAULT FALSE        -- Estado de bloqueo
+    id INT AUTO_INCREMENT PRIMARY KEY,       
+    nombre VARCHAR(255) NOT NULL,           
+    email VARCHAR(255) NOT NULL UNIQUE,     
+    telefono VARCHAR(15),                   
+    contraseña VARCHAR(255) NOT NULL,       
+    codigoPais VARCHAR(10),                 
+    role ENUM('usuario', 'admin') NOT NULL,  
+    isBlocked BOOLEAN DEFAULT FALSE        
 );
 
 -- Tabla de Canchas
-CREATE TABLE IF NOT EXISTS canchas (
+CREATE TABLE canchas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    image VARCHAR(255) NOT NULL, -- Campo para la imagen de la cancha
+    image VARCHAR(255) NOT NULL, 
     price_per_hour DECIMAL(10, 2) NOT NULL
 );
 
 -- Tabla de Horarios
-CREATE TABLE IF NOT EXISTS horarios (
+CREATE TABLE horarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     cancha_id INT NOT NULL,
-    date DATE NOT NULL, -- Fecha completa (YYYY-MM-DD)
+    date DATE NOT NULL, 
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
     estado ENUM('disponible', 'ocupado') DEFAULT 'disponible',
-    FOREIGN KEY (cancha_id) REFERENCES canchas(id)
+    FOREIGN KEY (cancha_id) REFERENCES canchas(id) ON DELETE CASCADE
 );
 
 -- Tabla de Reservaciones
-CREATE TABLE IF NOT EXISTS reservaciones (
+CREATE TABLE reservaciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    horario_id INT NOT NULL, -- Reserva basada en el horario, no en la cancha directamente
+    horario_id INT NOT NULL, 
     status ENUM('pendiente', 'confirmada', 'cancelada') DEFAULT 'pendiente',
-    FOREIGN KEY (user_id) REFERENCES usuarios(id),
-    FOREIGN KEY (horario_id) REFERENCES horarios(id)
+    FOREIGN KEY (user_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (horario_id) REFERENCES horarios(id) ON DELETE CASCADE
 );
 
 -- Tabla de Pagos
-CREATE TABLE IF NOT EXISTS pagos (
+CREATE TABLE pagos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     reserva_id INT NOT NULL,
@@ -51,18 +52,9 @@ CREATE TABLE IF NOT EXISTS pagos (
     payment_method ENUM('efectivo', 'tarjeta', 'transferencia') NOT NULL,
     payment_proof VARCHAR(255),
     payment_status ENUM('pendiente', 'completado', 'rechazado') DEFAULT 'pendiente',
-    FOREIGN KEY (user_id) REFERENCES usuarios(id),
-    FOREIGN KEY (reserva_id) REFERENCES reservaciones(id)
+    FOREIGN KEY (user_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (reserva_id) REFERENCES reservaciones(id) ON DELETE CASCADE
 );
-
--- Eliminar la restricción de clave externa en horarios
-ALTER TABLE horarios DROP FOREIGN KEY horarios_ibfk_1;
-
--- Truncar la tabla canchas
-TRUNCATE TABLE canchas;
-
--- Volver a agregar la restricción de clave externa
-ALTER TABLE horarios ADD CONSTRAINT horarios_ibfk_1 FOREIGN KEY (cancha_id) REFERENCES canchas(id);
 
 -- Insertar un solo registro
 INSERT INTO canchas (name, image, price_per_hour)
@@ -119,5 +111,3 @@ VALUES ('Pickeball 2', '../public/pickeball2.webp', 10.00);
 -- Insertar un solo registro
 INSERT INTO canchas (name, image, price_per_hour)
 VALUES ('Pickeball 3', '../public/pickeball3.webp', 10.00);
-
-ALTER TABLE horarios CHANGE COLUMN day_week date DATE NOT NULL;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import LayoutClient from "../../layout/LayoutClient.jsx";
 import { MetodoPago } from "../../components/MetodoPago.jsx";
@@ -12,25 +12,7 @@ function MetodosPago() {
     const horariosIds = searchParams.get("horarios").split(",");
     const montoTotal = searchParams.get("montoTotal");
 
-    // Función para sumar una hora a una hora dada
-    const sumarUnaHora = (hora) => {
-        const [h, m, s] = hora.split(":"); // Separar horas, minutos y segundos
-        const fecha = new Date();
-        fecha.setHours(parseInt(h, 10) + 1); // Sumar una hora
-        fecha.setMinutes(parseInt(m, 10));
-        fecha.setSeconds(parseInt(s, 10));
-        return fecha.toTimeString().split(" ")[0]; // Devolver en formato HH:MM:SS
-    };
-
-    // Crear un array de objetos con las horas de inicio y fin
-    const horariosFormateados = horariosIds.map((horaInicio) => {
-        const horaFin = sumarUnaHora(horaInicio); // Sumar una hora a la hora de inicio
-        return {
-            horaInicio: formatTime(horaInicio), // Formatear la hora de inicio
-            horaFin: formatTime(horaFin),       // Formatear la hora de fin
-        };
-    });
-
+    const [cancha, setCancha] = useState(null);
     const [metodoSeleccionado, setMetodoSeleccionado] = useState(null);
     const [imagenPagoMovil, setImagenPagoMovil] = useState(null);
     const [imagenZelle, setImagenZelle] = useState(null);
@@ -51,6 +33,43 @@ function MetodosPago() {
             contacto: "Contacto: 0412-7654321",
         },
     };
+
+    useEffect(() => {
+        // Fetch de la cancha por el ID
+        const fetchCancha = async () => {
+            try {
+                const response = await fetch(`http://localhost:3000/api/canchas/${canchaId}`);
+                if (!response.ok) {
+                    throw new Error("Error al obtener los detalles de la cancha");
+                }
+                const dataCancha = await response.json();
+                setCancha(dataCancha);
+            } catch (error) {
+                setError("No se pudo obtener la cancha.");
+            }
+        };
+
+        fetchCancha();
+    }, [canchaId]);
+
+    // Función para sumar una hora a una hora dada
+    const sumarUnaHora = (hora) => {
+        const [h, m, s] = hora.split(":"); // Separar horas, minutos y segundos
+        const fecha = new Date();
+        fecha.setHours(parseInt(h, 10) + 1); // Sumar una hora
+        fecha.setMinutes(parseInt(m, 10));
+        fecha.setSeconds(parseInt(s, 10));
+        return fecha.toTimeString().split(" ")[0]; // Devolver en formato HH:MM:SS
+    };
+
+    // Crear un array de objetos con las horas de inicio y fin
+    const horariosFormateados = horariosIds.map((horaInicio) => {
+        const horaFin = sumarUnaHora(horaInicio); // Sumar una hora a la hora de inicio
+        return {
+            horaInicio: formatTime(horaInicio), // Formatear la hora de inicio
+            horaFin: formatTime(horaFin),       // Formatear la hora de fin
+        };
+    });
 
     const handleSeleccion = (metodo) => {
         if (metodoSeleccionado === metodo) {
@@ -103,8 +122,8 @@ function MetodosPago() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',  // Esto asegura que el token se envíe con la solicitud
                 body: JSON.stringify({
-                    user_id: 1, // ID del usuario (debes obtenerlo de tu sistema de autenticación)
                     cancha_id: canchaId, // ID de la cancha
                     fecha: fecha, // Fecha de la reserva
                     horarios: horarios, // Array de horarios
@@ -127,15 +146,15 @@ function MetodosPago() {
 
     return (
         <LayoutClient>
-            <div className="flex justify-center p-2 ">
-                <div className="flex flex-col items-center w-full max-w-md h-120">
+            <div className="flex justify-center p-2">
+                <div className="flex flex-col items-center w-full max-w-md h-100">
                     <div className="border border-gray-500 rounded-xl w-full shadow-lg">
                         <div className="p-2">
                             <h1 className="text-2xl font-bold text-blue-950">Reservar</h1>
                         </div>
 
                         <div className="flex justify-between items-center my-4 p-2">
-                            <h2 className="text-xl font-bold text-green-600">Cancha {canchaId}</h2>
+                            <h2 className="text-xl font-bold text-green-600">{cancha?.name || "Cargando..."}</h2>
                             <p className="text-blue-950 font-bold">{fecha}</p>
                         </div>
 
@@ -151,7 +170,7 @@ function MetodosPago() {
 
                         <div className="flex flex-col font-bold text-blue-950">
                             <h3 className="text-xl font-bold mb-2 p-2">Métodos de Pago</h3>
-                            <ul className="scroll-blue overflow-y-auto " style={{ maxHeight: "400px" }}>
+                            <ul className="scroll-blue overflow-y-auto" style={{ maxHeight: "400px" }}>
                                 <MetodoPago
                                     nombre="Pago Móvil"
                                     seleccionado={metodoSeleccionado === "Pago Móvil"}
@@ -209,4 +228,4 @@ function MetodosPago() {
     );
 }
 
-export default MetodosPago; 
+export default MetodosPago;

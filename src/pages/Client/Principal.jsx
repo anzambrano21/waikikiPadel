@@ -7,6 +7,7 @@ import { ClipLoader } from "react-spinners"; // Importar el spinner
 
 function Principal() {
     const [canchas, setCanchas] = useState([]); // Estado para las canchas
+    const [reservas, setReservas] = useState([]); // Estado para las reservas
     const [loading, setLoading] = useState(true); // Estado para manejar la carga
     const [error, setError] = useState(null); // Estado para manejar errores
 
@@ -47,8 +48,32 @@ function Principal() {
         fetchCanchasYHorarios(); // Llama a la función para obtener los datos
     }, []);
 
-    // Estado de ejemplo para las reservas
-    const reservas = [{ id: 1 }, { id: 2 }]; // Si no hay reservas, deja el array vacío
+    useEffect(() => {
+        const fetchReservas = async () => {
+            try {
+                const responseReservas = await fetch("http://localhost:3000/api/reservas/usuario", {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}` // Suponiendo que guardas el token en el localStorage
+                    },
+                    credentials: 'include'  // Para enviar las cookies si las tienes
+                });
+                
+                if (!responseReservas.ok) {
+                    throw new Error("Error al obtener las reservas");
+                }
+    
+                const dataReservas = await responseReservas.json();
+                setReservas(dataReservas); // Actualiza el estado con las reservas
+            } catch (error) {
+                setError(error.message); // Maneja el error
+            } finally {
+                setLoading(false); // Finaliza la carga
+            }
+        };
+    
+        fetchReservas(); // Llama a la función para obtener las reservas
+    }, []);
 
     return (
         <LayoutClient>
@@ -57,29 +82,29 @@ function Principal() {
                     <h1 className="text-2xl md:text-3xl font-bold text-blue-950">Mis Reservaciones</h1>
                 </div>
 
-                {/* Contenedor para reservas o botón */}
                 <div className="flex">
-                    {reservas.length === 0 ? (
-                        // Si no hay reservas, muestra el botón
-                        <Link to="/canchasdispo">
-                            <button
-                                type="button"
-                                id="CardCrearReservacion"
-                                className="mx-4 py-6 md:py-8 p-4 md:p-6 border-2 border-blue-950 transform transition-transform duration-300 md:hover:scale-105 rounded-lg cursor-pointer"
-                            >
-                                <p className="text-3xl text-blue-950">+</p>
-                                <p className="text-lg md:text-xl text-blue-950 font-bold">Reserva tu cancha</p>
-                            </button>
-                        </Link>
-                    ) : (
-                        // Si hay reservas, muestra las tarjetas con scroll horizontal
-                        <div className="flex overflow-x-auto horarios-container mx-4 max-w-full"> {/* Añade max-w-full */}
-                            {reservas.map((reserva) => (
-                                <CardCanchaReservada key={reserva.id} />
-                            ))}
-                        </div>
-                    )}
-                </div>
+                        {reservas.length === 0 ? (
+                            // Si no hay reservas, muestra el botón
+                            <Link to="/canchasdispo">
+                                <button
+                                    type="button"
+                                    id="CardCrearReservacion"
+                                    className="mx-4 py-6 md:py-8 p-4 md:p-6 border-2 border-blue-950 transform transition-transform duration-300 md:hover:scale-105 rounded-lg cursor-pointer"
+                                >
+                                    <p className="text-3xl text-blue-950">+</p>
+                                    <p className="text-lg md:text-xl text-blue-950 font-bold">Reserva tu cancha</p>
+                                </button>
+                            </Link>
+                        ) : (
+                            // Si hay reservas, muestra las tarjetas con scroll horizontal
+                            <div className="flex overflow-x-auto horarios-container mx-4 max-w-full"> {/* Añade max-w-full */}
+                                {reservas.map((reserva) => (
+                                    <CardCanchaReservada key={reserva.id} />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
 
                 {/* Canchas disponibles */}
                 <div className="flex flex-col">

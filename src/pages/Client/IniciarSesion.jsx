@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router"; // Asegúrate de importar desde 'react-router-dom'
 import LayoutRegistrarse from "../../layout/LayoutRegistrarse";
 import logo from '../../assets/logo1.png';
 
@@ -42,6 +42,7 @@ function IniciarSesion() {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({ email, contraseña: password }), // Enviar email y contraseña
+                    credentials: 'include'  // Incluir las cookies en la solicitud
                 });
 
                 if (!response.ok) {
@@ -50,12 +51,26 @@ function IniciarSesion() {
                 }
 
                 const data = await response.json();
+                console.log(data); // Verifica si la respuesta contiene el token
 
                 // Guardar el token en el localStorage
-                localStorage.setItem("token", data.token);
+                if (data.user) {
+                                    // Guardar el token y la información del usuario en el localStorage
+                const userData = {
+                    id: data.user.id,
+                    nombre: data.user.nombre,
+                    email: data.user.email,
+                    role: data.user.role
+                };
 
-                // Redirigir al usuario a la página principal
-                navigate("/principal");
+                // Guardar todo en localStorage
+                localStorage.setItem("user", JSON.stringify(userData));
+
+
+                    navigate("/principal");
+                } else {
+                    throw new Error("User no recibido");
+                }
 
                 console.log("Inicio de sesión exitoso:", data);
             } catch (error) {

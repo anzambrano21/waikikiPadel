@@ -19,6 +19,7 @@ export const crearUsuario = async (req, res) => {
   }
 };
 
+
 export const login = async (req, res) => {
   const { email, contraseña } = req.body;
 
@@ -47,10 +48,18 @@ export const login = async (req, res) => {
       { expiresIn: '1h' } // Expiración del token
     );
 
-    // Respuesta exitosa
+    // Establecer la cookie 'token' con el token JWT
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // true en producción
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      maxAge: 3600000,
+      path: '/'
+  });
+
+    // Respuesta exitosa con el token
     res.json({
       message: 'Login exitoso',
-      token,
       user: {
         id: user.id,
         nombre: user.nombre,
@@ -59,7 +68,6 @@ export const login = async (req, res) => {
       },
     });
   } catch (error) {
-    // Manejo de errores
     console.error('Error en el login:', error);
     res.status(500).json({ error: 'Error en el servidor' });
   }
@@ -98,4 +106,48 @@ export const bloquearUsuario = async (req, res) => {
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
+};
+
+// Importación de funciones necesarias
+
+export const logout = (req, res) => {
+  try {
+    // Eliminar la cookie con el nombre 'token'
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      path: '/'
+  });
+
+    // Responder indicando que la sesión fue cerrada exitosamente
+    res.json({ message: 'Sesión cerrada correctamente' });
+  } catch (error) {
+    console.error('Error en el logout:', error);
+    res.status(500).json({ error: 'Error al cerrar sesión' });
+  }
+};
+
+
+export const verifyToken = (req, res) => {
+  const token = req.cookies.token;
+  console.log("TOKEN " + token)
+  
+  if (!token) {
+      return res.status(401).json({ error: 'No hay token. Inicia sesión' });
+  }
+
+  jwt.verify(token, 'secreto', (err, decoded) => {
+      if (err) {
+          res.clearCookie('token', { // Limpia la cookie inválida
+              httpOnly: true,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+              path: '/'
+          });
+          return res.status(401).json({ error: 'Token inválido' });
+      }
+
+      res.json({ message: 'Token válido', user: decoded });
+  });
 };

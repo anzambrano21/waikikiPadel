@@ -7,13 +7,20 @@ import {
 import pool from "../config/db.js";
 
 export const crearReserva = async (req, res) => {
-    const { user_id, cancha_id, fecha, horarios } = req.body; // Recibe los horarios como un array
+    // Obtener el user_id del token decodificado
+    const user_id = req.user.userId;  // 'userId' es la propiedad que se pasa en el payload del JWT
+
+    const { cancha_id, fecha, horarios } = req.body;
+
+    if (!user_id) {
+        return res.status(400).json({ message: "No se pudo obtener el ID del usuario" });
+    }
 
     const connection = await pool.getConnection();
     try {
-        await connection.beginTransaction(); // Iniciar una transacción
+        await connection.beginTransaction();  // Iniciar transacción
 
-        // Crear un horario y una reserva para cada horario seleccionado
+        // Verificar si los horarios están disponibles
         for (const horario of horarios) {
             const { start_time, end_time } = horario;
 
@@ -40,18 +47,18 @@ export const crearReserva = async (req, res) => {
             await connection.query(
                 `INSERT INTO reservaciones (user_id, horario_id, status) 
                  VALUES (?, ?, 'pendiente')`,
-                [user_id, result.insertId]
+                [user_id, result.insertId]  // Asociamos el horario insertado con la reserva
             );
         }
 
-        await connection.commit(); // Confirmar la transacción
+        await connection.commit();  // Confirmar la transacción
         res.status(201).json({ message: "Reserva creada exitosamente" });
     } catch (error) {
-        await connection.rollback(); // Revertir la transacción en caso de error
-        console.error("Error en crearReserva:", error);
+        await connection.rollback();  // Revertir la transacción en caso de error
+        console.error("Error al crear la reserva:", error);
         res.status(500).json({ message: "Error al crear la reserva", error });
     } finally {
-        connection.release(); // Liberar la conexión
+        connection.release();  // Liberar la conexión
     }
 };
 
@@ -96,5 +103,22 @@ export const eliminarReserva = async (req, res) => {
         res.status(200).json({ message: "Reserva eliminada" });
     } catch (error) {
         res.status(500).json({ message: "Error al eliminar la reserva", error });
+    }
+};
+
+// Función para obtener las reservas de un usuario
+export const obtenerReservasPorUsuario = async (userId) => {
+    try {
+        const [reservas] = await pool.query(
+            `SELECT r.id, r.status, h.start_time, h.end_time, c.name AS cancha
+            FROM reservaciones r
+            JOIN horarios h ON r.horario_id = h.id
+            JOIN canchas c ON h.cancha_id = c.id
+            WHERE r.user_id = ?`,
+            [userId]
+        );
+        return reservas;
+    } catch (error) {
+        throw new Error("Error al obtener las reservas del usuario");
     }
 };
