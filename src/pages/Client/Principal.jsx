@@ -72,7 +72,6 @@ function Principal() {
             }
         };
     
-        fetchReservas(); // Llama a la función para obtener las reservas
     }, []);
 
     return (

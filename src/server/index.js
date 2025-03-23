@@ -11,6 +11,7 @@ import pagoRoutes from "./routes/pagoRoutes.js";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
@@ -33,3 +34,12 @@ app.use("/api/pagos", pagoRoutes);
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
+
+/*
+SELECT r.id, h.date, h.start_time, h.end_time, c.name AS cancha_name, r.status
+         FROM reservaciones r
+         JOIN horarios h ON r.horario_id = h.id
+         JOIN canchas c ON h.cancha_id = c.id
+         WHERE r.user_id = 1
+
+*/
