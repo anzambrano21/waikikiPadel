@@ -52,7 +52,7 @@ function Principal() {
     useEffect(() => {
         const fetchReservas = async () => {
             try {
-                const id = 1; // ID como ejemplo
+                const id = 0; // ID como ejemplo
                 const responseReservas = await fetch(`http://localhost:3000/api/reservas/usuario/${id}`, {
                     method: 'GET',
                     credentials: 'include',

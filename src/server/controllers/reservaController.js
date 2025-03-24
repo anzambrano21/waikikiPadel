@@ -110,7 +110,9 @@ export const eliminarReserva = async (req, res) => {
 // Función para obtener las reservas de un usuario (incluyendo las canceladas)
 export const obtenerReservasUsuario = async (req, res) => {
     try {
-        const { id } = req.params; // ID del usuario obtenido de la URL
+        const user_id = req.user.userId;
+
+        const id = user_id; // ID del usuario obtenido de la URL
 
         console.log("ID recibido:", id);  // Verifica que el ID está llegando correctamente
 
