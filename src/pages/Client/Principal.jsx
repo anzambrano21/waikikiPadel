@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router"; // Cambia a 'react-router-dom'
+import { Link } from "react-router"; // Cambiar a 'react-router-dom'
 import LayoutClient from "../../layout/LayoutClient.jsx";
 import CardCancha from "../../components/CardCancha.jsx";
 import CardCanchaReservada from "../../components/CardCanchaReservada.jsx";
@@ -11,6 +11,7 @@ function Principal() {
     const [loading, setLoading] = useState(true); // Estado para manejar la carga
     const [error, setError] = useState(null); // Estado para manejar errores
 
+    // Obtener canchas y horarios
     useEffect(() => {
         const fetchCanchasYHorarios = async () => {
             try {
@@ -32,7 +33,6 @@ function Principal() {
                             throw new Error("Error al obtener los horarios");
                         }
                         const dataHorarios = await responseHorarios.json();
-                        console.log("dataHorarios:", dataHorarios); // Depuración
                         return { ...cancha, horarios: dataHorarios }; // Agregar horarios a la cancha
                     })
                 );
@@ -48,62 +48,91 @@ function Principal() {
         fetchCanchasYHorarios(); // Llama a la función para obtener los datos
     }, []);
 
+    // Obtener reservas
     useEffect(() => {
         const fetchReservas = async () => {
             try {
-                const responseReservas = await fetch("http://localhost:3000/api/reservas/usuario", {
+                const id = 1; // ID como ejemplo
+                const responseReservas = await fetch(`http://localhost:3000/api/reservas/usuario/${id}`, {
                     method: 'GET',
+                    credentials: 'include',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}` // Suponiendo que guardas el token en el localStorage
+                        'Content-Type': 'application/json',
                     },
-                    credentials: 'include'  // Para enviar las cookies si las tienes
                 });
-                
-                if (!responseReservas.ok) {
-                    throw new Error("Error al obtener las reservas");
+
+                if (responseReservas.ok) {
+                    const dataReservas = await responseReservas.json();
+                    setReservas(dataReservas); // Actualiza el estado con las reservas
+                } else {
+                    setReservas([]); // Si no hay reservas, reseteamos el estado
                 }
-    
-                const dataReservas = await responseReservas.json();
-                setReservas(dataReservas); // Actualiza el estado con las reservas
             } catch (error) {
                 setError(error.message); // Maneja el error
             } finally {
                 setLoading(false); // Finaliza la carga
             }
         };
-    
+
+        fetchReservas(); // Llama a la función para obtener las reservas
     }, []);
+
+    // Si está cargando o hay un error, muestra el Spinner o el error
+    if (loading) {
+        return (
+            <LayoutClient>
+                <div className="flex h-screen items-center justify-center">
+                    <ClipLoader color="#1E3A8A" size={50} />
+                </div>
+            </LayoutClient>
+        );
+    }
+
+    if (error) {
+        return (
+            <LayoutClient>
+                <div className="flex h-screen items-center justify-center">
+                    {error}
+                </div>
+            </LayoutClient>
+        );
+    }
 
     return (
         <LayoutClient>
-            <div className="overflow-x-hidden"> {/* Evita el desbordamiento en el eje x */}
+            <div className="overflow-x-hidden">
                 <div className="mx-4 my-2 flex justify-between items-center py-4">
                     <h1 className="text-2xl md:text-3xl font-bold text-blue-950">Mis Reservaciones</h1>
                 </div>
 
                 <div className="flex">
-                        {reservas.length === 0 ? (
-                            // Si no hay reservas, muestra el botón
-                            <Link to="/canchasdispo">
-                                <button
-                                    type="button"
-                                    id="CardCrearReservacion"
-                                    className="mx-4 py-6 md:py-8 p-4 md:p-6 border-2 border-blue-950 transform transition-transform duration-300 md:hover:scale-105 rounded-lg cursor-pointer"
-                                >
-                                    <p className="text-3xl text-blue-950">+</p>
-                                    <p className="text-lg md:text-xl text-blue-950 font-bold">Reserva tu cancha</p>
-                                </button>
-                            </Link>
-                        ) : (
-                            // Si hay reservas, muestra las tarjetas con scroll horizontal
-                            <div className="flex overflow-x-auto horarios-container mx-4 max-w-full"> {/* Añade max-w-full */}
-                                {reservas.map((reserva) => (
-                                    <CardCanchaReservada key={reserva.id} />
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
+                    {reservas.length === 0 ? (
+                        // Si no hay reservas, muestra el botón de crear una reserva
+                        <Link to="/canchasdispo">
+                            <button
+                                type="button"
+                                id="CardCrearReservacion"
+                                className="mx-4 py-6 md:py-8 p-4 md:p-6 border-2 border-blue-950 transform transition-transform duration-300 md:hover:scale-105 rounded-lg cursor-pointer"
+                            >
+                                <p className="text-3xl text-blue-950">+</p>
+                                <p className="text-lg md:text-xl text-blue-950 font-bold">Reserva tu cancha</p>
+                            </button>
+                        </Link>
+                    ) : (
+                        // Si hay reservas, muestra las tarjetas con scroll horizontal
+                        <div className="flex overflow-x-auto horarios-container mx-4 max-w-full">
+                            {reservas.map((reserva) => (
+                                <CardCanchaReservada
+                                    key={reserva.id}
+                                    name={reserva.cancha_name}
+                                    status={reserva.status}
+                                    start_time={reserva.start_time}
+                                    end_time={reserva.end_time}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
 
                 {/* Canchas disponibles */}
                 <div className="flex flex-col">
@@ -111,8 +140,8 @@ function Principal() {
 
                     {/* Mostrar spinner o error */}
                     {loading ? (
-                        <div className="flex justify-center items-center h-64"> {/* Contenedor para el spinner */}
-                            <ClipLoader color="#1E3A8A" size={50} /> {/* Spinner */}
+                        <div className="flex justify-center items-center h-64">
+                            <ClipLoader color="#1E3A8A" size={50} />
                         </div>
                     ) : error ? (
                         <p className="text-center text-red-500">Error: {error}</p>

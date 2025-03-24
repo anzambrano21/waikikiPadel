@@ -1,6 +1,7 @@
 import {
     getReservas,
     getReservaById,
+    getReservasPorUsuario,
     updateReservaStatus,
     deleteReserva,
 } from "../models/Reserva.js";
@@ -106,19 +107,25 @@ export const eliminarReserva = async (req, res) => {
     }
 };
 
-// Función para obtener las reservas de un usuario
-export const obtenerReservasPorUsuario = async (userId) => {
+// Función para obtener las reservas de un usuario (incluyendo las canceladas)
+export const obtenerReservasUsuario = async (req, res) => {
     try {
-        const [reservas] = await pool.query(
-            `SELECT r.id, r.status, h.start_time, h.end_time, c.name AS cancha
-            FROM reservaciones r
-            JOIN horarios h ON r.horario_id = h.id
-            JOIN canchas c ON h.cancha_id = c.id
-            WHERE r.user_id = ?`,
-            [userId]
-        );
-        return reservas;
+        const { id } = req.params; // ID del usuario obtenido de la URL
+
+        console.log("ID recibido:", id);  // Verifica que el ID está llegando correctamente
+
+        // Llamar al modelo para obtener todas las reservas del usuario
+        const reservas = await getReservasPorUsuario(id);
+
+        // Si no tiene reservas, devolver un array vacío
+        if (!reservas || reservas.length === 0) {
+            return res.status(200).json([]); // Cambié el 404 a 200 y retorno un array vacío
+        }
+
+        // Devolver todas las reservas como un array de objetos
+        res.status(200).json(reservas);
     } catch (error) {
-        throw new Error("Error al obtener las reservas del usuario");
+        console.error("Error al obtener las reservas del usuario:", error);
+        res.status(500).json({ message: "Error al obtener las reservas", error });
     }
 };
