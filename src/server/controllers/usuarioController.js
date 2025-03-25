@@ -12,9 +12,40 @@ export const crearUsuario = async (req, res) => {
   }
 
   try {
-    const result = await createUsuario({ nombre, email, telefono, contraseña, codigoPais, role });
-    res.status(201).json({ message: 'Usuario registrado exitosamente', result });
+    // Encriptar la contraseña antes de guardar el usuario
+    const hashedPassword = await bcrypt.hash(contraseña, 10);
+
+    // Crear el nuevo usuario en la base de datos
+    const result = await createUsuario({ nombre, email, telefono, contraseña: hashedPassword, codigoPais, role });
+
+    // Generar el token JWT
+    const token = jwt.sign(
+      { userId: result.id, role: result.role }, // Payload del token (incluye role)
+      'secreto', // Clave secreta (debería estar en una variable de entorno)
+      { expiresIn: '1h' } // Expiración del token
+    );
+
+    // Establecer la cookie 'token' con el token JWT
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // true en producción
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      maxAge: 3600000,  // 1 hora
+      path: '/'
+    });
+
+    // Respuesta exitosa con el token
+    res.status(201).json({
+      message: 'Usuario registrado exitosamente',
+      user: {
+        id: result.id,
+        nombre: result.nombre,
+        email: result.email,
+        role: result.role, // Incluye el role en la respuesta
+      }
+    });
   } catch (error) {
+    console.error('Error al registrar el usuario:', error);
     res.status(400).json({ error: error.message });
   }
 };

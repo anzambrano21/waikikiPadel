@@ -135,7 +135,7 @@ function Principal() {
                 </div>
 
                 {/* Canchas disponibles */}
-                <div className="flex flex-col">
+                <div className="flex flex-col w-full ">
                     <h1 className="text-2xl md:text-3xl my-4 mx-4 font-bold text-blue-950">Canchas Disponibles</h1>
 
                     {/* Mostrar spinner o error */}
@@ -146,7 +146,7 @@ function Principal() {
                     ) : error ? (
                         <p className="text-center text-red-500">Error: {error}</p>
                     ) : (
-                        <div id="canchasCont" className="flex flex-wrap">
+                        <div id="canchasCont" className="flex flex-wrap  w-full">
                             {canchas.map((cancha) => (
                                 <CardCancha
                                     key={cancha.id}

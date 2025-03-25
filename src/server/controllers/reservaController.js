@@ -112,12 +112,10 @@ export const obtenerReservasUsuario = async (req, res) => {
     try {
         const user_id = req.user.userId;
 
-        const id = user_id; // ID del usuario obtenido de la URL
-
-        console.log("ID recibido:", id);  // Verifica que el ID está llegando correctamente
+        console.log("ID recibido:", user_id);  // Verifica que el ID está llegando correctamente
 
         // Llamar al modelo para obtener todas las reservas del usuario
-        const reservas = await getReservasPorUsuario(id);
+        const reservas = await getReservasPorUsuario(user_id);
 
         // Si no tiene reservas, devolver un array vacío
         if (!reservas || reservas.length === 0) {

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import canchaPadel from "../assets/canchaPadelLogin.jpg";
+import canchaPadel from "../assets/imagenPrincipal.webp";
 
 function LayoutConFormulario({ children }) {
     // Efecto para deshabilitar el scroll al montar el componente
