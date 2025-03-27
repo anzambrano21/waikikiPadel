@@ -16,7 +16,7 @@ const router = express.Router();
 
 // Rutas para los usuarios
 router.post('/', crearUsuario); // Registrar usuario
-router.post('/uploadImage', uploadImage); // Registrar usuario
+router.post('/uploadImage', uploadImage); // Registrar usuarioc
 router.post('/login', login); // Login de usuario
 router.post('/logout', logout); // Nueva ruta para cerrar sesión
 router.get('/', obtenerUsuarios); // Obtener todos los usuarios
