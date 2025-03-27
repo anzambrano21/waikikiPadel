@@ -146,7 +146,7 @@ function Principal() {
                     ) : error ? (
                         <p className="text-center text-red-500">Error: {error}</p>
                     ) : (
-                        <div id="canchasCont" className="flex flex-wrap  w-full">
+                        <div id="canchasCont" className="flex flex-wrap justify-between w-full">
                             {canchas.map((cancha) => (
                                 <CardCancha
                                     key={cancha.id}

@@ -6,11 +6,11 @@ function CardCancha({ id, name, image, price_per_hour, horarios }) {
     return (
         <div
             id="cardCancha"
-            className="my-2 shadow-xl w-full md:w-1/3 md:mx-2  rounded-md cursor-pointer transform transition-transform duration-300 md:hover:scale-105"
+            className="my-4 shadow-xl w-full rounded-md cursor-pointer"
         >
             {/* Corregí el Link para usar interpolación de cadenas correctamente */}
             <Link to={`/reservar?cancha=${id}`}>
-                <img src={image} alt={name} className="w-full h-32 object-cover rounded-t-md" />
+                <img src={image} alt={name} className="w-full h-50 object-cover rounded-t-md" />
                 <div className="p-4">
                     <div className="flex align-items-center text-center justify-between">
                         <h3 className="text-2xl font-bold">{name}</h3>
