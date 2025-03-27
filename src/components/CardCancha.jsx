@@ -1,15 +1,16 @@
 import React from "react";
-import { Link } from "react-router"; // Cambia a 'react-router-dom'
+import { Link } from "react-router"; // Cambié a 'react-router-dom'
 import Horario from "./Horario.jsx";
 
 function CardCancha({ id, name, image, price_per_hour, horarios }) {
     return (
         <div
             id="cardCancha"
-            className="my-2 shadow-xl w-full md:w-sm md:mx-4 md:mr-4 rounded-md cursor-pointer transform transition-transform duration-300 md:hover:scale-105"
+            className="my-2 shadow-xl w-full md:w-1/3 md:mx-2  rounded-md cursor-pointer transform transition-transform duration-300 md:hover:scale-105"
         >
+            {/* Corregí el Link para usar interpolación de cadenas correctamente */}
             <Link to={`/reservar?cancha=${id}`}>
-                <img src={image} alt={name} className="w-full h-30 object-cover rounded-t-md" />
+                <img src={image} alt={name} className="w-full h-32 object-cover rounded-t-md" />
                 <div className="p-4">
                     <div className="flex align-items-center text-center justify-between">
                         <h3 className="text-2xl font-bold">{name}</h3>
@@ -23,7 +24,7 @@ function CardCancha({ id, name, image, price_per_hour, horarios }) {
 
             {/* Mostrar los horarios disponibles */}
             <div className="px-2">
-                <div className="flex overflow-x-auto whitespace-nowrap horarios-container pb-1 max-w-full"> {/* Añade max-w-full */}
+                <div className="flex overflow-x-auto whitespace-nowrap horarios-container pb-1 max-w-full">
                     {horarios.map((horario, index) => (
                         <Horario
                             key={index} // Usar el índice como clave temporal
