@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router"; // Cambia a 'react-router-dom'
+import { Link, useNavigate } from "react-router-dom";
 import LayoutRegistrarse from "../../layout/LayoutRegistrarse";
 import logo from '../../assets/logo1.png';
 import defaultUser from '../../assets/defaultUser.jpg';
@@ -13,7 +13,7 @@ function Registrarse() {
     const [nombre, setNombre] = useState("");
     const [telefono, setTelefono] = useState("");
     const [email, setEmail] = useState("");
-    const [contraseña, setcontraseña] = useState("");
+    const [contraseña, setContraseña] = useState("");
     const navigate = useNavigate(); // Para redirigir al usuario
 
     const handleImageChange = (event) => {
@@ -33,6 +33,7 @@ function Registrarse() {
             .then((data) => {
                 const countryList = data.map((country) => ({
                     value: country.idd.root + (country.idd.suffixes ? country.idd.suffixes[0] : ""),
+                    label: country.name.common,
                     flag: country.flags.png,
                 }));
                 setCountries(countryList);
@@ -44,10 +45,10 @@ function Registrarse() {
         setSelectedCountry(selectedOption);
     };
 
-    const formatOptionLabel = ({ value, flag }) => (
+    const formatOptionLabel = ({ value, label, flag }) => (
         <div style={{ display: "flex", alignItems: "center" }}>
-            <img src={flag} alt={value} style={{ width: "20px" }} />
-            <span>{value}</span>
+            <img src={flag} alt={label} style={{ width: "20px" }} />
+            <span>{label}</span>
         </div>
     );
 
@@ -88,45 +89,46 @@ function Registrarse() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-      
+
         if (validateForm()) {
-          const data = {
-            nombre,
-            email,
-            telefono,
-            contraseña,
-            codigoPais: selectedCountry.value, // Enviar el código del país
-          };
-      
-          console.log(data); // Verifica que los datos sean correctos
-      
-          try {
-            const response = await fetch("http://localhost:3000/api/usuarios", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json", // Especifica el tipo de contenido
-              },
-              body: JSON.stringify(data), // Convierte el objeto a JSON
-            });
-      
-            if (!response.ok) {
-              const errorData = await response.json();
-              throw new Error(errorData.error || "Error al registrar el usuario");
+            const formData = new FormData();
+            formData.append("nombre", nombre);
+            formData.append("email", email);
+            formData.append("telefono", telefono);
+            formData.append("contraseña", contraseña);
+            formData.append("codigoPais", selectedCountry.value); // Enviar el código del país
+
+            // Si se seleccionó una imagen, agregarla al FormData
+            if (profileImage) {
+                const fileInput = document.getElementById("profileImageInput");
+                const file = fileInput.files[0]; // Obtener el archivo de la imagen
+                formData.append("profileImage", file); // Agregar la imagen al FormData
             }
-      
-            const result = await response.json();
-            console.log("Usuario registrado:", result);
-      
-            // Redirigir al usuario a la página principal
-            navigate("/principal");
-          } catch (error) {
-            console.error("Error:", error);
-            setErrors({ submit: error.message });
-          }
+
+            try {
+                const response = await fetch("http://localhost:3000/api/usuarios", {
+                    method: "POST",
+                    body: formData, // Enviar los datos con el FormData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || "Error al registrar el usuario");
+                }
+
+                const result = await response.json();
+                console.log("Usuario registrado:", result);
+
+                // Redirigir al usuario a la página de inicio de sesión
+                navigate("/iniciarsesion");
+            } catch (error) {
+                console.error("Error:", error);
+                setErrors({ submit: error.message });
+            }
         } else {
-          console.log("Formulario inválido. Corrige los errores.");
+            console.log("Formulario inválido. Corrige los errores.");
         }
-      };
+    };
 
     return (
         <LayoutRegistrarse>
@@ -226,7 +228,7 @@ function Registrarse() {
                             type="password"
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                             value={contraseña}
-                            onChange={(e) => setcontraseña(e.target.value)}
+                            onChange={(e) => setContraseña(e.target.value)}
                         />
                         {errors.contraseña && <p className="text-red-500 text-sm mt-1">{errors.contraseña}</p>}
                     </div>

@@ -2,12 +2,14 @@ import express from 'express';
 import {
   crearUsuario,
   obtenerUsuarios,
+  obtenerPerfil,
   eliminarUsuario,
   login,
   bloquearUsuario,
-  verifyToken,
+  verificaToken,
   logout,  // Importar la nueva función logout
 } from '../controllers/usuarioController.js';
+import verifyToken from "../middleware/verifyToken.js";
 
 const router = express.Router();
 
@@ -18,6 +20,8 @@ router.post('/logout', logout); // Nueva ruta para cerrar sesión
 router.get('/', obtenerUsuarios); // Obtener todos los usuarios
 router.delete('/:id', eliminarUsuario); // Eliminar un usuario
 router.put('/:id/bloquear', bloquearUsuario); // Bloquear/Desbloquear un usuario
-router.get('/verificarToken', verifyToken);  // Verificar si el token es válido
+router.get('/verificarToken', verificaToken);  // Verificar si el token es válido
+
+router.get('/perfil/:id', verifyToken, obtenerPerfil);
 
 export default router;

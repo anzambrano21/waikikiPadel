@@ -37,7 +37,7 @@ const SidebarClient = () => {
             <nav className="flex flex-col flex-grow">
                 <ul className="flex flex-col items-center list-none text-gray flex-grow">
                     <MenuItemClient
-                        to="/pagos"
+                        to="/perfil"
                         text="Perfil"
                         currentPath={location.pathname}
                         icon={<UserIcon className="w-5 h-5" />} // Ícono de Pagos

@@ -1,43 +1,31 @@
 import pool from '../config/db.js';
 import bcrypt from 'bcryptjs';
 
+// Crear usuario con imagen
 export const createUsuario = async (user) => {
-  const { nombre, email, telefono, contraseña, codigoPais, role = 'usuario' } = user;
+  const { nombre, email, telefono, contraseña, codigoPais, role = 'usuario', profileImage } = user;
+  const hashedPassword = await bcrypt.hash(contraseña, 10);
 
-  if (!contraseña) {
-    throw new Error("La contraseña es obligatoria");
-  }
+  const query = `
+    INSERT INTO usuarios (nombre, email, telefono, password, codigoPais, role, isBlocked, profileImage)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `;
 
-  try {
-    // Hashear la contraseña
-    const hashedPassword = await bcrypt.hash(contraseña, 10);
+  const [result] = await pool.query(query, [
+    nombre,
+    email,
+    telefono,
+    hashedPassword,
+    codigoPais,
+    role,
+    false,
+    profileImage // Guardamos la ruta de la imagen
+  ]);
 
-    // Query para insertar el usuario en la base de datos
-    const query = `
-      INSERT INTO usuarios (nombre, email, telefono, contraseña, codigoPais, role, isBlocked)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `;
-
-    // Ejecutar la consulta
-    const [result] = await pool.query(query, [
-      nombre,
-      email,
-      telefono,
-      hashedPassword,
-      codigoPais,
-      role,
-      false, // isBlocked por defecto es false
-    ]);
-
-    // Retornar el resultado
-    return result;
-  } catch (error) {
-    console.error('Error al crear el usuario:', error);
-    throw new Error('No se pudo crear el usuario');
-  }
+  return result;
 };
 
-// Buscar un usuario por email
+// Buscar usuario por email
 export const findByEmail = async (email) => {
   const query = 'SELECT * FROM usuarios WHERE email = ?';
   const [rows] = await pool.query(query, [email]);
@@ -50,13 +38,20 @@ export const getUsuarios = async () => {
   return rows;
 };
 
-// Eliminar un usuario
+// Eliminar usuario
 export const deleteUsuario = async (id) => {
   await pool.query('DELETE FROM usuarios WHERE id = ?', [id]);
 };
 
-// Bloquear/Desbloquear un usuario
+// Bloquear/desbloquear usuario
 export const toggleBlockUsuario = async (id, isBlocked) => {
   const query = 'UPDATE usuarios SET isBlocked = ? WHERE id = ?';
   await pool.query(query, [isBlocked, id]);
+};
+
+// Buscar usuario por id
+export const findById = async (id) => {
+  const query = 'SELECT * FROM usuarios WHERE id = ?';
+  const [rows] = await pool.query(query, [id]);
+  return rows[0];
 };

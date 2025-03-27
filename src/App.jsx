@@ -11,6 +11,7 @@ import MetodosPago from './pages/Client/MetodosPago.jsx';
 import IniciarSesion from './pages/Client/IniciarSesion.jsx';
 import Regitrarse from './pages/Client/Registrarse.jsx';
 import MetodoPagoAdmin from './pages/Admin/MetodoPagoAdmin.jsx';
+import Perfil from './pages/Client/Perfil.jsx';
 import ProtectedRoute from './utils/ProtectedRoute.jsx';
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Route path='/metodospagoadmin' element={<MetodoPagoAdmin />} />
         <Route path='/principal' element={<Principal />} />
         <Route path='/canchasdispo' element={<CanchasC />} />
+        <Route path='/perfil' element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
 
         <Route path='/reservar' element={<ProtectedRoute><Reservar /></ProtectedRoute>} />
 

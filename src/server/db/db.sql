@@ -8,10 +8,11 @@ CREATE TABLE usuarios (
     nombre VARCHAR(255) NOT NULL,           
     email VARCHAR(255) NOT NULL UNIQUE,     
     telefono VARCHAR(15),                   
-    contraseña VARCHAR(255) NOT NULL,       
+    password VARCHAR(255) NOT NULL,       
     codigoPais VARCHAR(10),                 
     role ENUM('usuario', 'admin') NOT NULL,  
     isBlocked BOOLEAN DEFAULT FALSE        
+    profileImage VARCHAR(255)
 );
 
 -- Tabla de Canchas

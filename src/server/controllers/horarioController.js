@@ -6,6 +6,8 @@ import {
     deleteHorario,
 } from "../models/Horario.js";
 import pool from "../config/db.js";
+import moment from 'moment-timezone';  // Si decides usar moment-timezone
+
 
 export const obtenerHorariosDisponibles = async (req, res) => {
     const { cancha_id, fecha } = req.query;
@@ -28,6 +30,11 @@ export const obtenerHorariosDisponibles = async (req, res) => {
         const horaInicio = 8; // 8:00 AM
         const horaFin = 22; // 10:00 PM (último bloque: 10:00 PM - 11:00 PM)
 
+        // Obtener la hora actual en la zona horaria de Venezuela
+        const horaActual = moment().tz("America/Caracas").format("HH:mm:ss"); // Hora actual en Venezuela
+
+        console.log("horaActual:", horaActual); // Depuración
+
         for (let hora = horaInicio; hora <= horaFin; hora++) {
             const horaInicioHorario = `${hora.toString().padStart(2, '0')}:00:00`; // Formato HH:MM:SS
             const horaFinHorario = `${(hora + 1).toString().padStart(2, '0')}:00:00`; // Formato HH:MM:SS
@@ -39,7 +46,8 @@ export const obtenerHorariosDisponibles = async (req, res) => {
                     horarioOcupado.end_time === horaFinHorario
             );
 
-            if (!estaOcupado) {
+            // Verificar si la hora ya pasó (comparamos con la hora actual en Venezuela)
+            if (!estaOcupado && horaInicioHorario > horaActual) {
                 horariosDisponibles.push({
                     start_time: horaInicioHorario,
                     end_time: horaFinHorario,
@@ -55,6 +63,7 @@ export const obtenerHorariosDisponibles = async (req, res) => {
         res.status(500).json({ message: "Error al obtener los horarios", error });
     }
 };
+
 
 // Obtener todos los horarios
 export const obtenerHorarios = async (req, res) => {
