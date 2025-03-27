@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router"; // Cambié la importación a react-router-dom
 import LayoutRegistrarse from "../../layout/LayoutRegistrarse";
 import logo from '../../assets/logo1.png';
 import defaultUser from '../../assets/defaultUser.jpg';
@@ -13,7 +13,7 @@ function Registrarse() {
     const [nombre, setNombre] = useState("");
     const [telefono, setTelefono] = useState("");
     const [email, setEmail] = useState("");
-    const [contraseña, setContraseña] = useState("");
+    const [password, setPassword] = useState(""); // Cambié 'contraseña' a 'password'
     const navigate = useNavigate(); // Para redirigir al usuario
 
     const handleImageChange = (event) => {
@@ -33,7 +33,6 @@ function Registrarse() {
             .then((data) => {
                 const countryList = data.map((country) => ({
                     value: country.idd.root + (country.idd.suffixes ? country.idd.suffixes[0] : ""),
-                    label: country.name.common,
                     flag: country.flags.png,
                 }));
                 setCountries(countryList);
@@ -45,10 +44,10 @@ function Registrarse() {
         setSelectedCountry(selectedOption);
     };
 
-    const formatOptionLabel = ({ value, label, flag }) => (
+    const formatOptionLabel = ({ value, flag }) => (
         <div style={{ display: "flex", alignItems: "center" }}>
-            <img src={flag} alt={label} style={{ width: "20px" }} />
-            <span>{label}</span>
+            <img src={flag} alt={value} style={{ width: "20px" }} />
+            <span>{value}</span>
         </div>
     );
 
@@ -73,10 +72,10 @@ function Registrarse() {
             newErrors.email = "El correo electrónico no es válido.";
         }
 
-        if (!contraseña.trim()) {
-            newErrors.contraseña = "La contraseña es obligatoria.";
-        } else if (contraseña.trim().length < 6) {
-            newErrors.contraseña = "La contraseña debe tener al menos 6 caracteres.";
+        if (!password.trim()) { // Cambié 'contraseña' a 'password'
+            newErrors.password = "La contraseña es obligatoria."; // Cambié 'contraseña' a 'password'
+        } else if (password.trim().length < 6) {
+            newErrors.password = "La contraseña debe tener al menos 6 caracteres."; // Cambié 'contraseña' a 'password'
         }
 
         if (!selectedCountry) {
@@ -91,24 +90,23 @@ function Registrarse() {
         e.preventDefault();
 
         if (validateForm()) {
-            const formData = new FormData();
-            formData.append("nombre", nombre);
-            formData.append("email", email);
-            formData.append("telefono", telefono);
-            formData.append("contraseña", contraseña);
-            formData.append("codigoPais", selectedCountry.value); // Enviar el código del país
+            const data = {
+                nombre,
+                email,
+                telefono,
+                password, // Cambié 'contraseña' a 'password'
+                codigoPais: selectedCountry.value, // Enviar el código del país
+            };
 
-            // Si se seleccionó una imagen, agregarla al FormData
-            if (profileImage) {
-                const fileInput = document.getElementById("profileImageInput");
-                const file = fileInput.files[0]; // Obtener el archivo de la imagen
-                formData.append("profileImage", file); // Agregar la imagen al FormData
-            }
+            console.log(data); // Verifica que los datos sean correctos
 
             try {
                 const response = await fetch("http://localhost:3000/api/usuarios", {
                     method: "POST",
-                    body: formData, // Enviar los datos con el FormData
+                    headers: {
+                        "Content-Type": "application/json", // Especifica el tipo de contenido
+                    },
+                    body: JSON.stringify(data), // Convierte el objeto a JSON
                 });
 
                 if (!response.ok) {
@@ -119,7 +117,7 @@ function Registrarse() {
                 const result = await response.json();
                 console.log("Usuario registrado:", result);
 
-                // Redirigir al usuario a la página de inicio de sesión
+                // Redirigir al usuario a la página principal
                 navigate("/iniciarsesion");
             } catch (error) {
                 console.error("Error:", error);
@@ -227,10 +225,10 @@ function Registrarse() {
                         <input
                             type="password"
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                            value={contraseña}
-                            onChange={(e) => setContraseña(e.target.value)}
+                            value={password} // Cambié 'contraseña' a 'password'
+                            onChange={(e) => setPassword(e.target.value)} // Cambié 'setcontraseña' a 'setPassword'
                         />
-                        {errors.contraseña && <p className="text-red-500 text-sm mt-1">{errors.contraseña}</p>}
+                        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>} {/* Cambié 'contraseña' a 'password' */}
                     </div>
 
                     <Link to="/iniciarsesion">

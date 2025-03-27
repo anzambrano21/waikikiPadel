@@ -9,134 +9,184 @@ import {
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-import multer from 'multer';
-import path from 'path';
-
-// Configuración de multer para almacenar las imágenes
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    // La ruta donde se guardarán las imágenes
-    cb(null, 'uploads/usuarios/');
-  },
-  filename: (req, file, cb) => {
-    // El nombre del archivo será el email del usuario más un timestamp
-    cb(null, `${Date.now()}-${file.originalname}`);
-  }
-});
-
-const upload = multer({
-  storage,
-  fileFilter: (req, file, cb) => {
-    // Aceptar solo imágenes
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (ext !== '.png' && ext !== '.jpg' && ext !== '.jpeg') {
-      return cb(new Error('Solo se permiten imágenes JPG, JPEG y PNG.'));
-    }
-    cb(null, true);
-  }
-}).single('profileImage'); // 'profileImage' es el nombre del campo en el formulario
-
-// Crear usuario con imagen
 export const crearUsuario = async (req, res) => {
-  const { nombre, email, telefono, contraseña, codigoPais, role = 'usuario' } = req.body;
-  
-  upload(req, res, async (err) => {
-    if (err) {
-      return res.status(400).json({ error: err.message });
-    }
+  const { nombre, email, telefono, password, codigoPais, role = 'usuario' } = req.body;
 
-    try {
-      const imageUrl = req.file ? `/uploads/usuarios/${req.file.filename}` : null; // Guardar ruta de la imagen
-      const hashedPassword = await bcrypt.hash(contraseña, 10);
-
-      const result = await createUsuario({
-        nombre,
-        email,
-        telefono,
-        contraseña: hashedPassword,
-        codigoPais,
-        role,
-        profileImage: imageUrl, // Guardamos la ruta de la imagen
-      });
-
-      res.status(201).json({
-        message: 'Usuario registrado exitosamente',
-        id: result.insertId,
-        profileImage: imageUrl, // Enviamos la ruta de la imagen en la respuesta
-      });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-};
-
-
-// Login
-export const login = async (req, res) => {
-  const { email, contraseña } = req.body;
-  const user = await findByEmail(email);
-  if (!user || !(await bcrypt.compare(contraseña, user.password))) {
-    return res.status(401).json({ error: 'Credenciales inválidas' });
+  if (!password) {
+    return res.status(400).json({ error: "La contraseña es obligatoria" });
   }
-  if (user.isBlocked) return res.status(403).json({ error: 'Usuario bloqueado' });
 
-  const token = jwt.sign({ userId: user.id, role: user.role }, 'secreto', { expiresIn: '1h' });
-  res.cookie('token', token, { httpOnly: true, secure: false, sameSite: 'Lax' });
-  res.json({ message: 'Login exitoso', user: { id: user.id, nombre: user.nombre, role: user.role } });
+  try {
+    // Crear el nuevo usuario en la base de datos
+    const result = await createUsuario({ nombre, email, telefono, password, codigoPais, role });
+
+    // Generar el token JWT
+    const token = jwt.sign(
+      { userId: result.id, role: result.role }, // Payload del token
+      'secreto', // Clave secreta (debería estar en una variable de entorno)
+      { expiresIn: '1h' } // Expiración del token
+    );
+
+    // Establecer la cookie 'token' con el token JWT
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      maxAge: 3600000, // 1 hora
+      path: '/'
+    });
+
+    // Respuesta exitosa con el token
+    res.status(201).json({
+      message: 'Usuario registrado exitosamente',
+      user: {
+        id: result.id,
+        nombre: result.nombre,
+        email: result.email,
+        role: result.role,
+      }
+    });
+  } catch (error) {
+    console.error('Error al registrar el usuario:', error);
+    res.status(400).json({ error: error.message });
+  }
 };
 
-// Logout
+export const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // Buscar el usuario por email
+    const user = await findByEmail(email);
+    if (!user) {
+      return res.status(400).json({ error: 'Usuario no encontrado' });
+    }
+
+    // Verificar si el usuario está bloqueado
+    if (user.isBlocked) {
+      return res.status(400).json({ error: 'Usuario bloqueado' });
+    }
+
+    // Verificar si la contraseña está definida
+    if (!user.password) {
+      return res.status(400).json({ error: 'Contraseña no encontrada en la base de datos' });
+    }
+
+    // Asegúrate de que `password` no sea undefined ni nulo
+    if (password === undefined || password === null) {
+      return res.status(400).json({ error: 'Por favor, ingrese una contraseña' });
+    }
+
+    // Comparar contraseñas usando bcryptjs
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Contraseña incorrecta' });
+    }
+
+    // Generar token JWT
+    const token = jwt.sign(
+      { userId: user.id, role: user.role },
+      'secreto',
+      { expiresIn: '1h' }
+    );
+
+    // Establecer la cookie 'token' con el token JWT
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      maxAge: 3600000,
+      path: '/'
+    });
+
+    // Respuesta exitosa con el token
+    res.json({
+      message: 'Login exitoso',
+      user: {
+        id: user.id,
+        nombre: user.nombre,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error('Error en el login:', error);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
+};
+
+
+
+export const obtenerUsuarios = async (req, res) => {
+  try {
+    const usuarios = await getUsuarios();
+    res.json(usuarios);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export const eliminarUsuario = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await deleteUsuario(id);
+    res.json({ message: 'Usuario eliminado exitosamente' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export const bloquearUsuario = async (req, res) => {
+  const { id } = req.params;
+  const { isBlocked } = req.body;
+
+  try {
+    await toggleBlockUsuario(id, isBlocked);
+    res.json({ message: `Usuario ${isBlocked ? 'bloqueado' : 'desbloqueado'} exitosamente` });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 export const logout = (req, res) => {
-  res.clearCookie('token');
-  res.json({ message: 'Sesión cerrada correctamente' });
+  try {
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      path: '/'
+    });
+    res.json({ message: 'Sesión cerrada correctamente' });
+  } catch (error) {
+    console.error('Error en el logout:', error);
+    res.status(500).json({ error: 'Error al cerrar sesión' });
+  }
 };
 
-// Verificar token
 export const verificaToken = (req, res) => {
   const token = req.cookies.token;
-  if (!token) return res.status(401).json({ error: 'No hay token. Inicia sesión' });
+
+  if (!token) {
+    return res.status(401).json({ error: 'No hay token. Inicia sesión' });
+  }
 
   jwt.verify(token, 'secreto', (err, decoded) => {
     if (err) {
-      res.clearCookie('token');
+      res.clearCookie('token', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'None', path: '/' });
       return res.status(401).json({ error: 'Token inválido' });
     }
+
     res.json({ message: 'Token válido', user: decoded });
   });
 };
 
-// Obtener usuarios
-export const obtenerUsuarios = async (req, res) => {
-  const usuarios = await getUsuarios();
-  res.json(usuarios);
-};
-
-// Eliminar usuario
-export const eliminarUsuario = async (req, res) => {
-  const { id } = req.params;
-  await deleteUsuario(id);
-  res.json({ message: 'Usuario eliminado exitosamente' });
-};
-
-// Bloquear/Desbloquear usuario
-export const bloquearUsuario = async (req, res) => {
-  const { id } = req.params;
-  const { isBlocked } = req.body;
-  await toggleBlockUsuario(id, isBlocked);
-  res.json({ message: `Usuario ${isBlocked ? 'bloqueado' : 'desbloqueado'} exitosamente` });
-};
-
-
 export const obtenerPerfil = async (req, res) => {
-  
   const userIdFromToken = req.user.userId; // ID del usuario en el token
-  
 
   try {
-    // Buscar el usuario en la base de datos
     const usuario = await findById(userIdFromToken);
 
-    // Si el usuario no existe, retornar error 404
     if (!usuario) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
@@ -144,11 +194,9 @@ export const obtenerPerfil = async (req, res) => {
     // Excluir la contraseña antes de enviar la respuesta
     const { password, ...perfil } = usuario;
 
-    // Enviar la información del perfil (sin la contraseña)
     res.json(perfil);
-
   } catch (error) {
-    // En caso de error en la consulta a la base de datos, retornar error 500
     res.status(500).json({ error: 'Hubo un error al obtener el perfil del usuario' });
   }
 };
+ 
